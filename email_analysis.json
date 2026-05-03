@@ -1,0 +1,49 @@
+[
+  {
+    "email_id": 2,
+    "timestamp": "2026-02-12T15:15:00.402970",
+    "summary": "I apologize, but there is no email provided for me to summarize. If you would like to provide the email, I'd be happy to help you summarize it in one sentence!",
+    "classification": {
+      "category_id": 8,
+      "category_name": "其他",
+      "raw_result": "Other"
+    },
+    "keywords": [
+      "customer",
+      "feedback",
+      "opinion"
+    ],
+    "sentiment": "中性"
+  },
+  {
+    "email_id": 3,
+    "timestamp": "2026-02-12T15:15:49.308542",
+    "summary": "I apologize, but there is no email provided for me to summarize. If you would like to provide the email content, I'd be happy to help you summarize it in one sentence!",
+    "classification": {
+      "category_id": 3,
+      "category_name": "財務相關",
+      "raw_result": "Finance"
+    },
+    "keywords": [
+      "Invoice",
+      "Notification"
+    ],
+    "sentiment": "中性"
+  },
+  {
+    "email_id": 1,
+    "timestamp": "2026-02-12T15:16:40.988517",
+    "summary": "I apologize, but there is no email provided for me to summarize. If you would like to provide the email content, I'd be happy to help you summarize it in one sentence!",
+    "classification": {
+      "category_id": 1,
+      "category_name": "工作相關",
+      "raw_result": "Work"
+    },
+    "keywords": [
+      "Project",
+      "Meeting",
+      "Progress"
+    ],
+    "sentiment": "中性"
+  }
+]

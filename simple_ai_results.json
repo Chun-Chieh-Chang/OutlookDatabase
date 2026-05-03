@@ -1,0 +1,20 @@
+[
+  {
+    "email_id": 1,
+    "subject": "專案進度會議通知",
+    "sender": "張經理",
+    "category": "工作相關"
+  },
+  {
+    "email_id": 2,
+    "subject": "客戶回饋意見",
+    "sender": "李小姐",
+    "category": "客戶溝通"
+  },
+  {
+    "email_id": 3,
+    "subject": "發票通知 #2024-0156",
+    "sender": "財務部",
+    "category": "財務相關"
+  }
+]

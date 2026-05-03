@@ -1,0 +1,12 @@
+{
+  "ollama": {
+    "url": "http://localhost:11434",
+    "model": "deepseek-v3.1:671b-cloud",
+    "timeout": 60
+  },
+  "analysis": {
+    "max_email_length": 1000,
+    "batch_size": 5,
+    "cache_results": true
+  }
+}

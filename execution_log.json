@@ -1,0 +1,29 @@
+[
+  {
+    "timestamp": "2026-02-12T14:33:55.293532",
+    "plan": "⚡ 日常使用",
+    "emails_processed": 50,
+    "emails_added": 0,
+    "emails_skipped": 50,
+    "elapsed_time": 1.2097489833831787,
+    "avg_time_per_email": 0.024194979667663576
+  },
+  {
+    "timestamp": "2026-02-12T15:22:22.507397",
+    "plan": "⚡ 日常使用",
+    "emails_processed": 50,
+    "emails_added": 50,
+    "emails_skipped": 0,
+    "elapsed_time": 1.8687212467193604,
+    "avg_time_per_email": 0.03737442493438721
+  },
+  {
+    "timestamp": "2026-02-13T10:05:23.841021",
+    "plan": "⚡ 日常使用",
+    "emails_processed": 50,
+    "emails_added": 0,
+    "emails_skipped": 50,
+    "elapsed_time": 3.02213191986084,
+    "avg_time_per_email": 0.060442638397216794
+  }
+]

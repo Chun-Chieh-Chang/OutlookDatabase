@@ -1,0 +1,12 @@
+# BitFun snapshot data - auto managed
+.bitfun/
+
+# Data and Privacy
+emails.db
+raw/
+wiki/
+__pycache__/
+*.exe
+*.csv
+*.png
+.env
