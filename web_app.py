@@ -32,7 +32,7 @@ def get_connection():
 def check_database_exists():
     """Check if database exists and has data"""
     if not os.path.exists(DB_NAME):
-        return False, "Database not found. Please run outlook_db_builder.py first."
+        return False, "尚未發現資料庫，請先執行「資料同步」。"
     
     try:
         conn = get_connection()
@@ -41,7 +41,7 @@ def check_database_exists():
         count = cursor.fetchone()[0]
         conn.close()
         if count == 0:
-            return False, "Database is empty. Please run outlook_db_builder.py first."
+            return False, "資料庫目前為空，請執行「資料同步」。"
         return True, f"Database contains {count} emails"
     except Exception as e:
         return False, f"Database error: {str(e)}"
