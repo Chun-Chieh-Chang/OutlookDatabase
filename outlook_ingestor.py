@@ -65,9 +65,13 @@ def get_outlook_folder(namespace, account_name, folder_name):
         print(f"Error accessing folder {folder_name}: {e}")
         return None
 
-def ingest_emails():
+def ingest_emails(max_emails=None, body_limit=None):
     """Extract and store everything from Outlook."""
-    print("Starting SkillsBuilder Ingestor...")
+    global MAX_EMAILS
+    if max_emails is not None:
+        MAX_EMAILS = max_emails
+        
+    print(f"Starting SkillsBuilder Ingestor (Limit: {MAX_EMAILS})...")
     
     try:
         outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
@@ -107,6 +111,9 @@ def ingest_emails():
                 
                 received_time = str(msg.ReceivedTime)
                 body = msg.Body if msg.Body else ""
+                
+                if body_limit and len(body) > body_limit:
+                    body = body[:body_limit] + "..."
                 
                 # Check attachments
                 attachments = []

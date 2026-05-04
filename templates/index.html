@@ -3,1424 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook 郵件資料庫工具 | SkillsBuilder Pro</title>
-    <!-- Google Fonts: Inter & Outfit -->
+    <title>Outlook AI 知識庫 | SkillsBuilder Lite</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <!-- Marked.js for Wiki Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        window.DB_EXISTS = {{ db_exists_js|safe }};
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <style>
+        :root {
+            --max-width: 1000px;
+        }
+        .app-container {
+            display: block; /* Remove grid sidebar for simplicity */
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-4);
+        }
+        .main-content {
+            padding: 0;
+        }
+        .hero-section {
+            text-align: center;
+            margin-bottom: var(--space-12);
+        }
+        .action-card {
+            background: linear-gradient(135deg, var(--brand-accent), #2563eb);
+            color: white;
+            padding: var(--space-8);
+            border-radius: var(--radius-2xl);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-lg);
+        }
+        .action-info h2 { font-size: 1.5rem; margin-bottom: var(--space-1); }
+        .action-info p { opacity: 0.9; font-size: 0.9rem; }
+        
+        .search-container {
+            background: var(--bg-surface);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-2);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-8);
+        }
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: var(--space-4) var(--space-6);
+            font-size: 1.1rem;
+            outline: none;
+            background: transparent;
+            color: var(--text-primary);
+        }
+        .search-btn {
+            background: var(--brand-accent);
+            color: white;
+            border: none;
+            padding: 0 var(--space-8);
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .search-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .stats-strip {
+            display: flex;
+            gap: var(--space-8);
+            margin-bottom: var(--space-12);
+            justify-content: center;
+        }
+        .stat-item { display: flex; align-items: center; gap: var(--space-2); color: var(--text-secondary); font-size: 0.9rem; }
+        .stat-item i { color: var(--brand-accent); }
+        .stat-item b { color: var(--text-primary); }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: var(--space-8);
+        }
+        @media (max-width: 850px) {
+            .results-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation - 側邊欄導航 -->
-        <aside class="sidebar">
-            <nav class="space-y-6">
-                <!-- Logo/Brand -->
-                <div class="flex items-center space-x-3 mb-8">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background-color: var(--brand-accent);">
-                        <i class="fas fa-envelope text-white"></i>
-                    </div>
-                    <h1 class="text-lg font-bold">Outlook 資料庫</h1>
+        <!-- Hero - 標題與統計 -->
+        <header class="hero-section">
+            <h1 class="text-4xl font-black mb-4">Outlook AI 知識助手</h1>
+            <div class="stats-strip">
+                <div class="stat-item"><i class="fas fa-database"></i> 郵件總數: <b id="totalEmails">-</b></div>
+                <div class="stat-item"><i class="fas fa-robot"></i> AI 狀態: <b id="aiStatus">檢查中...</b></div>
+                <div class="stat-item"><i class="fas fa-clock"></i> 最後更新: <b id="lastUpdate">剛剛</b></div>
+            </div>
+        </header>
+
+        <!-- Main Action - 一鍵同步 -->
+        <div class="action-card animate-fade-in">
+            <div class="action-info">
+                <h2>同步並更新知識庫</h2>
+                <p>提取 Outlook 郵件、附件並透過 AI 重建知識圖譜</p>
+            </div>
+            <button class="btn btn-lg bg-white text-blue-600 hover:bg-gray-50 px-8 py-4 rounded-2xl font-bold shadow-sm" onclick="runFullPipeline()">
+                <i class="fas fa-sync-alt mr-2"></i> 開始全量更新
+            </button>
+        </div>
+
+        <!-- Search Area - 智慧搜尋與問答 -->
+        <div class="search-container animate-fade-in">
+            <input type="text" id="searchKeyword" class="search-input" placeholder="問問題或搜尋郵件內容...">
+            <button class="search-btn" onclick="askWiki()">
+                <i class="fas fa-paper-plane mr-2"></i> 提問 / 搜尋
+            </button>
+        </div>
+
+        <!-- Content Area - 結果顯示 -->
+        <div class="results-grid">
+            <!-- Left: Answers & Search Results -->
+            <div class="space-y-6">
+                <div id="wikiAnswer" class="hidden animate-fade-in p-8 bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-xl prose dark:prose-invert max-w-none">
+                    <!-- AI Answer goes here -->
                 </div>
                 
-                <!-- Navigation Items (SOP Driven) -->
-                <div class="space-y-2">
-                    <a href="#" class="nav-item active" onclick="showView('sync')">
-                        <i class="fas fa-sync"></i>
-                        <span>1. 資料同步</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="showView('wiki')">
-                        <i class="fas fa-project-diagram"></i>
-                        <span>2. 知識提取</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="showView('chat')">
-                        <i class="fas fa-comments"></i>
-                        <span>3. 智能問答</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="showView('settings')">
-                        <i class="fas fa-cog"></i>
-                        <span>系統設定</span>
-                    </a>
-                </div>
-                
-                <!-- Quick Actions -->
-                <div class="pt-6 border-t border-gray-200">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">快速操作</h3>
-                    <div class="space-y-2">
-                        <button class="nav-action" onclick="buildDatabase()">
-                            <i class="fas fa-database"></i>
-                            <span>提取郵件</span>
-                        </button>
-                        <button class="nav-action" onclick="exportData()">
-                            <i class="fas fa-download"></i>
-                            <span>匯出資料</span>
-                        </button>
-                        <button class="nav-action" onclick="fullIngest()">
-                            <i class="fas fa-file-import"></i>
-                            <span>完整提取 (含附件)</span>
-                        </button>
-                        <button class="nav-action" onclick="buildWiki()">
-                            <i class="fas fa-magic"></i>
-                            <span>建構 Wiki</span>
-                        </button>
-                        <button class="nav-action" onclick="clearAndRebuild()">
-                            <i class="fas fa-trash"></i>
-                            <span>清空重提</span>
-                        </button>
-                    </div>
-                </div>
-            </nav>
-        </aside>
-        
-        <!-- Main Content - 主內容區 -->
-        <main class="main-content">
-            <!-- Header - 頁面標題欄 -->
-            <header class="top-bar">
-                <h1 class="page-title">郵件資料庫儀表板</h1>
-                <div class="actions">
-                    <button class="btn btn-primary" onclick="buildDatabase()">
-                        <i class="fas fa-plus"></i>
-                        提取郵件
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearAndRebuild()">
-                        <i class="fas fa-refresh"></i>
-                        清空重提
-                    </button>
-                    <button class="btn btn-ghost" onclick="setupAI()">
-                        <i class="fas fa-robot"></i>
-                        AI 設定
-                    </button>
-                </div>
-            </header>
-
-            <!-- State-Driven Workflow Header -->
-            <div class="p-8 border-b border-gray-100 dark:border-slate-800">
-                <div class="max-w-4xl mx-auto flex items-center justify-between">
-                    <div class="flex items-center space-x-8">
-                        <div class="flex items-center space-x-2 {% if db_exists %}text-emerald-500{% else %}text-blue-500{% endif %}">
-                            <div class="w-8 h-8 rounded-full border-2 border-current flex items-center justify-center font-bold text-sm">1</div>
-                            <span class="font-bold">同步資料</span>
-                        </div>
-                        <div class="w-12 h-px bg-gray-200"></div>
-                        <div class="flex items-center space-x-2 text-gray-400" id="step2-indicator">
-                            <div class="w-8 h-8 rounded-full border-2 border-current flex items-center justify-center font-bold text-sm">2</div>
-                            <span class="font-bold">知識提取</span>
-                        </div>
-                        <div class="w-12 h-px bg-gray-200"></div>
-                        <div class="flex items-center space-x-2 text-gray-400" id="step3-indicator">
-                            <div class="w-8 h-8 rounded-full border-2 border-current flex items-center justify-center font-bold text-sm">3</div>
-                            <span class="font-bold">智能問答</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="btn btn-ghost btn-sm" onclick="showView('settings')">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- View Manager -->
-            <div id="view-sync" class="view-content animate-fade-in p-12">
-                <div class="max-w-2xl mx-auto text-center">
-                    <div class="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-8">
-                        <i class="fas fa-cloud-download-alt fa-3x text-blue-600"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold mb-4">開始建立您的知識庫</h2>
-                    <p class="text-gray-500 mb-10 text-lg">系統將會連動 Outlook 並安全地提取郵件內容與附件。</p>
-                    <button class="btn btn-primary btn-lg w-full py-6 rounded-2xl shadow-xl hover:scale-[1.02] transition-transform" onclick="fullIngest()">
-                        <i class="fas fa-bolt mr-2"></i> 立即開始全量同步
-                    </button>
-                </div>
-            </div>
-
-            <div id="view-chat" class="view-content hidden animate-fade-in">
-                <div class="max-w-4xl mx-auto p-8 pt-12">
-                    <!-- Knowledge Base Summary Card -->
-                    <div class="flex items-center justify-between mb-12 p-6 bg-blue-50/50 dark:bg-slate-800/50 rounded-2xl border border-blue-100 dark:border-slate-700">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex -space-x-2">
-                                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white border-2 border-white"><i class="fas fa-envelope text-xs"></i></div>
-                                <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white border-2 border-white"><i class="fas fa-brain text-xs"></i></div>
-                            </div>
-                            <div>
-                                <h3 class="font-bold">知識庫已就緒</h3>
-                                <p class="text-xs text-gray-500">已整合所有郵件與知識圖譜實體</p>
-                            </div>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" onclick="showView('wiki')">
-                            瀏覽知識圖譜 <i class="fas fa-chevron-right ml-1"></i>
-                        </button>
-                    </div>
-
-                    <!-- Primary Chat Interface -->
-                    <div class="space-y-6">
-                        <div class="text-center mb-8">
-                            <h2 class="text-4xl font-bold mb-4">今天想了解什麼？</h2>
-                            <p class="text-gray-500">輸入問題，AI 將從數千封郵件中為您尋找答案</p>
-                        </div>
-                        
-                        <div class="relative">
-                            <textarea id="wikiQuery" class="form-input w-full p-6 pr-20 rounded-3xl border-gray-200 focus:ring-4 focus:ring-blue-100 min-h-[150px] text-lg shadow-sm" placeholder="描述您的需求或提問..."></textarea>
-                            <button class="absolute bottom-6 right-6 w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors" onclick="askWiki()">
-                                <i class="fas fa-arrow-up"></i>
-                            </button>
-                        </div>
-
-                        <div id="wikiAnswer" class="hidden animate-fade-in p-8 bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-xl prose dark:prose-invert max-w-none">
-                            <!-- Answer Content -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-wiki" class="view-content hidden animate-fade-in p-8">
-                <!-- Keep existing Wiki browsing layout but simplified -->
-                <div class="flex items-center space-x-4 mb-8">
-                    <button class="btn btn-ghost" onclick="showView('chat')"><i class="fas fa-arrow-left"></i></button>
-                    <h2 class="text-2xl font-bold">知識圖譜瀏覽器</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div id="wikiIndex" class="md:col-span-1 space-y-2"></div>
-                    <div id="wikiContent" class="md:col-span-3 card p-8 min-h-[700px] prose dark:prose-invert max-w-none"></div>
-                </div>
-            </div>
-            
-            <div id="view-settings" class="view-content hidden animate-fade-in p-8">
-                <!-- Simplified settings -->
-                <div class="max-w-xl mx-auto">
-                    <h2 class="text-2xl font-bold mb-8">設定</h2>
-                    <div class="card p-8 space-y-8">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold">重新建構知識圖譜</h4>
-                                <p class="text-sm text-gray-500">重新掃描所有郵件並更新實體</p>
-                            </div>
-                            <button class="btn btn-secondary" onclick="buildWiki()">執行建構</button>
-                        </div>
-                        <div class="pt-8 border-t">
-                            <h4 class="font-bold text-red-500 mb-2">清除資料</h4>
-                            <button class="btn btn-ghost text-red-500" onclick="clearAndRebuild()">清空所有郵件與 Wiki</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistics Cards - 統計卡片 -->
-            {% if db_exists %}
-            <div class="stats-grid animate-fade-in">
-                <!-- Email Count Card -->
-                <div class="stat-card">
-                    <div class="stat-icon email">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="totalEmails">-</div>
-                        <div class="stat-label">總郵件數</div>
-                    </div>
-                </div>
-                
-                <!-- Search Results Card -->
-                <div class="stat-card">
-                    <div class="stat-icon search">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="searchCount">0</div>
-                        <div class="stat-label">搜尋結果</div>
-                    </div>
-                </div>
-                
-                <!-- AI Status Card -->
-                <div class="stat-card">
-                    <div class="stat-icon ai">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="aiStatus">檢查中...</div>
-                        <div class="stat-label">AI 狀態</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Plan Selection - 方案選擇 -->
-            <div class="card animate-fade-in" style="margin-bottom: var(--space-8);">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <div class="card-title-icon" style="background-color: var(--brand-accent);">
-                            <i class="fas fa-cogs"></i>
-                        </div>
-                        郵件提取方案
-                    </h2>
-                </div>
-                <div class="card-content">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Plan Options -->
-                        <div class="plan-option" data-plan="1">
-                            <div class="plan-header">
-                                <i class="fas fa-rocket plan-icon"></i>
-                                <h3 class="plan-title">超快速測試</h3>
-                            </div>
-                            <div class="plan-details">
-                                <div class="plan-count">10 封郵件</div>
-                                <div class="plan-desc">適合快速測試功能</div>
-                            </div>
-                        </div>
-                        
-                        <div class="plan-option active" data-plan="2">
-                            <div class="plan-header">
-                                <i class="fas fa-bolt plan-icon"></i>
-                                <h3 class="plan-title">日常使用</h3>
-                            </div>
-                            <div class="plan-details">
-                                <div class="plan-count">50 封郵件</div>
-                                <div class="plan-desc">推薦日常使用 ⭐</div>
-                            </div>
-                        </div>
-                        
-                        <div class="plan-option" data-plan="3">
-                            <div class="plan-header">
-                                <i class="fas fa-sync-alt plan-icon"></i>
-                                <h3 class="plan-title">完整更新</h3>
-                            </div>
-                            <div class="plan-details">
-                                <div class="plan-count">200 封郵件</div>
-                                <div class="plan-desc">完整資料更新</div>
-                            </div>
-                        </div>
-                        
-                        <div class="plan-option" data-plan="4">
-                            <div class="plan-header">
-                                <i class="fas fa-database plan-icon"></i>
-                                <h3 class="plan-title">完整匯入</h3>
-                            </div>
-                            <div class="plan-details">
-                                <div class="plan-count">500 封郵件</div>
-                                <div class="plan-desc">大量資料匯入</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Custom Plan -->
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">自訂設定</h3>
-                            <button class="btn btn-secondary btn-sm" onclick="toggleCustomPlan()">
-                                <i class="fas fa-sliders-h mr-2"></i>
-                                展開設定
-                            </button>
-                        </div>
-                        
-                        <div id="customPlanSection" class="hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="form-group">
-                                    <label class="form-label">郵件數量</label>
-                                    <input type="number" id="customEmailCount" class="form-input" placeholder="輸入郵件數量" min="1" max="1000" value="100">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">內文限制 (字元)</label>
-                                    <input type="number" id="customBodyLimit" class="form-input" placeholder="輸入內文長度限制" min="0" value="200">
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <button class="btn btn-primary" onclick="buildCustomPlan()">
-                                    <i class="fas fa-play mr-2"></i>
-                                    執行自訂方案
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Analysis Section -->
-            <div class="card animate-fade-in" style="margin-bottom: var(--space-8);">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <div class="card-title-icon bg-orange-500">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        AI 智慧工具
-                    </h2>
-                </div>
-                <div class="card-content">
-                    <!-- AI Tools Grid -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <button onclick="analyzeRecentEmails()" class="ai-tool-btn">
-                            <i class="fas fa-brain tool-icon"></i>
-                            <span class="tool-label">分析最近郵件</span>
-                        </button>
-                        <button onclick="analyzeSearchResults()" class="ai-tool-btn">
-                            <i class="fas fa-search tool-icon"></i>
-                            <span class="tool-label">分析搜尋結果</span>
-                        </button>
-                        <button onclick="generateEmailSummary()" class="ai-tool-btn">
-                            <i class="fas fa-file-alt tool-icon"></i>
-                            <span class="tool-label">生成郵件摘要</span>
-                        </button>
-                        <button onclick="extractKeyInfo()" class="ai-tool-btn">
-                            <i class="fas fa-key tool-icon"></i>
-                            <span class="tool-label">提取重點資訊</span>
-                        </button>
-                        <button onclick="generateReplySuggestions()" class="ai-tool-btn">
-                            <i class="fas fa-reply tool-icon"></i>
-                            <span class="tool-label">回覆建議</span>
-                        </button>
-                        <button onclick="translateEmail()" class="ai-tool-btn">
-                            <i class="fas fa-language tool-icon"></i>
-                            <span class="tool-label">翻譯郵件</span>
-                        </button>
-                        <button onclick="analyzeEmailInsights()" class="ai-tool-btn">
-                            <i class="fas fa-chart-line tool-icon"></i>
-                            <span class="tool-label">郵件洞察</span>
-                        </button>
-                        <button onclick="checkAIStatus()" class="ai-tool-btn">
-                            <i class="fas fa-sync tool-icon"></i>
-                            <span class="tool-label">檢查 AI 狀態</span>
-                        </button>
-                    </div>
-                    
-                    <!-- AI Results -->
-                    <div id="aiResults" class="mt-4 p-4 bg-gray-50 rounded-lg hidden">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="font-semibold flex items-center gap-2">
-                                <i class="fas fa-robot text-orange-500"></i>
-                                <span id="aiResultsTitle">AI 分析結果</span>
-                            </h3>
-                            <button onclick="closeAIResults()" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div id="aiReport" class="text-sm text-gray-700 whitespace-pre-wrap"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Search Section -->
-            <div class="card animate-fade-in" style="margin-bottom: var(--space-8);">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <div class="card-title-icon bg-blue-500">
-                            <i class="fas fa-search"></i>
-                        </div>
-                        智慧搜尋
-                    </h2>
-                </div>
-                <div class="card-content">
-                    <!-- Search Type Selection -->
-                    <div class="mb-6">
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="setSearchType('keyword')" id="keywordSearchBtn" class="search-type-btn active">
-                                <i class="fas fa-keyboard mr-2"></i>關鍵字搜尋
-                            </button>
-                            <button onclick="setSearchType('semantic')" id="semanticSearchBtn" class="search-type-btn">
-                                <i class="fas fa-brain mr-2"></i>語意搜尋
-                            </button>
-                            <button onclick="setSearchType('summary')" id="summarySearchBtn" class="search-type-btn">
-                                <i class="fas fa-file-alt mr-2"></i>摘要搜尋
-                            </button>
-                            <button onclick="setSearchType('category')" id="categorySearchBtn" class="search-type-btn">
-                                <i class="fas fa-tags mr-2"></i>分類搜尋
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Search Input -->
-                    <div class="flex gap-4 mb-4">
-                        <div class="flex-1">
-                            <input type="text" id="searchKeyword" placeholder="輸入搜尋內容..." 
-                                   class="form-input">
-                        </div>
-                        <button onclick="searchEmails()" class="btn btn-primary">
-                            <i class="fas fa-search mr-2"></i>搜尋
-                        </button>
-                    </div>
-                    
-                    <!-- Search Type Description -->
-                    <div class="mb-6">
-                        <div class="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                            <i class="fas fa-info-circle"></i>
-                            <span id="searchDescriptionText">使用關鍵字搜尋郵件主旨和內容</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Results Section -->
-            <div class="content-grid">
-                <!-- Search Results -->
-                <div class="results-section animate-fade-in">
-                    <div class="results-header">
-                        <h3 class="results-title">
-                            <div class="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
-                                <i class="fas fa-list text-white text-xs"></i>
-                            </div>
-                            搜尋結果
-                        </h3>
-                    </div>
-                    <div class="results-content">
-                        <div id="searchResults" class="space-y-1">
-                            <div class="text-center py-8">
-                                <i class="fas fa-search text-gray-400 text-2xl mb-2"></i>
-                                <p class="text-gray-500">請輸入關鍵字開始搜尋</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Top Senders -->
-                <div class="results-section animate-fade-in">
-                    <div class="results-header">
-                        <h3 class="results-title">
-                            <div class="w-5 h-5 bg-purple-500 rounded flex items-center justify-center">
-                                <i class="fas fa-users text-white text-xs"></i>
-                            </div>
-                            主要寄件者
-                        </h3>
-                    </div>
-                    <div class="results-content">
-                        <div id="topSenders" class="space-y-1">
-                            <div class="loading-state">
-                                <div class="loading-spinner"></div>
-                                <div class="loading-text">載入中...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Emails -->
-            <div class="results-section animate-fade-in" style="margin-top: var(--space-8);">
-                <div class="results-header">
-                    <h3 class="results-title">
-                        <div class="w-5 h-5 rounded flex items-center justify-center" style="background-color: var(--brand-warning);">
-                            <i class="fas fa-clock text-white text-xs"></i>
-                        </div>
-                        最近郵件
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-search text-blue-500"></i> 相關郵件內容
                     </h3>
-                </div>
-                <div class="results-content">
-                    <div id="recentEmails" class="space-y-1">
-                        <div class="loading-state">
-                            <div class="loading-spinner"></div>
-                            <div class="loading-text">載入中...</div>
-                        </div>
+                    <div id="searchResults" class="space-y-4">
+                        <p class="text-gray-400 text-center py-8">輸入關鍵字開始檢索...</p>
                     </div>
                 </div>
             </div>
-            {% endif %}
-            </div> <!-- end animate-fade-in -->
-        </main> <!-- end main-content -->
 
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-            <div class="bg-white rounded-lg p-8 text-center" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle);">
-                <i class="fas fa-spinner fa-spin text-blue-500 text-4xl mb-4" style="color: var(--brand-accent);"></i>
-                <p class="text-lg font-semibold" style="color: var(--text-primary);">處理中...</p>
-                <p id="loadingMessage" class="mt-2" style="color: var(--text-secondary);">請稍候</p>
+            <!-- Right: Context & Quick Actions -->
+            <div class="space-y-6">
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4">快速工具</h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button onclick="analyzeEmailInsights()" class="nav-action text-sm">
+                            <i class="fas fa-chart-line"></i> 產生分析報告
+                        </button>
+                        <button onclick="showView('wiki')" class="nav-action text-sm">
+                            <i class="fas fa-project-diagram"></i> 瀏覽知識圖譜
+                        </button>
+                        <button onclick="exportData()" class="nav-action text-sm">
+                            <i class="fas fa-download"></i> 匯出 CSV
+                        </button>
+                        <button onclick="clearAndRebuild()" class="nav-action text-sm text-red-500">
+                            <i class="fas fa-trash"></i> 重置資料庫
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4">最近提取</h3>
+                    <div id="recentEmails" class="space-y-3 text-sm">
+                        <!-- Recent list -->
+                    </div>
+                </div>
             </div>
         </div>
-    </div> <!-- end app-container -->
 
-    <script>
-        // Load initial data
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                initializeApp();
-            });
-        } else {
-            initializeApp();
-        }
+        <!-- Wiki Modal (hidden by default) -->
+        <div id="view-wiki" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-8">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-bold">知識圖譜瀏覽器</h2>
+                    <button class="p-2 hover:bg-gray-100 rounded-full" onclick="document.getElementById('view-wiki').classList.add('hidden')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-hidden flex">
+                    <div id="wikiIndex" class="w-64 border-r p-4 overflow-y-auto bg-gray-50 dark:bg-slate-800"></div>
+                    <div id="wikiContent" class="flex-1 p-8 overflow-y-auto prose dark:prose-invert max-w-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function initializeApp() {
-            // Check if database exists - this will be set by Flask template
-            const dbExists = '{{ db_exists_js|safe }}'; // This will be set by Flask template
-            console.log('Database exists:', dbExists);
-            
-            if (dbExists === 'true') {
-                loadStats();
-            } else {
-                // Hide loading spinners if no database
-                const topSendersElement = document.getElementById('topSenders');
-                const recentEmailsElement = document.getElementById('recentEmails');
-                if (topSendersElement) {
-                    topSendersElement.innerHTML = '<p class="text-gray-500 text-center py-8">請先提取郵件資料</p>';
-                }
-                if (recentEmailsElement) {
-                    recentEmailsElement.innerHTML = '<p class="text-gray-500 text-center py-8">請先提取郵件資料</p>';
-                }
-            }
-            
-            // Check AI status on page load
-            checkAIStatus();
-        }
-
-        function showLoading(message = '處理中...') {
-            const loadingMessage = document.getElementById('loadingMessage');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingMessage) loadingMessage.textContent = message;
-            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-        }
-
-        function hideLoading() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-        }
-
-        async function loadStats() {
-            console.log('Loading stats...');
-            try {
-                const response = await fetch('/api/stats');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log('Stats data:', data);
-                
-                if (data.error) {
-                    console.error('API error:', data.error);
-                    throw new Error(data.error);
-                }
-
-                // Update total emails
-                const totalEmailsElement = document.getElementById('totalEmails');
-                if (totalEmailsElement) {
-                    totalEmailsElement.textContent = data.total_emails.toLocaleString();
-                }
-
-                // Update top senders
-                const topSendersElement = document.getElementById('topSenders');
-                if (topSendersElement) {
-                    if (data.top_senders && data.top_senders.length > 0) {
-                        const sendersHtml = data.top_senders.map(sender => `
-                            <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
-                                <span class="font-medium text-gray-700">${sender.sender_name}</span>
-                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">${sender.count}</span>
-                            </div>
-                        `).join('');
-                        topSendersElement.innerHTML = sendersHtml;
-                    } else {
-                        topSendersElement.innerHTML = '<p class="text-gray-500 text-center py-8">沒有寄件者資料</p>';
-                    }
-                }
-
-                // Update recent emails
-                const recentEmailsElement = document.getElementById('recentEmails');
-                if (recentEmailsElement) {
-                    if (data.recent_emails && data.recent_emails.length > 0) {
-                        const recentHtml = data.recent_emails.map(email => `
-                            <div class="border-l-4 border-blue-500 pl-4 py-2">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-800">${email.subject || '(無主旨)'}</p>
-                                        <p class="text-sm text-gray-600">${email.sender_name}</p>
-                                    </div>
-                                    <span class="text-xs text-gray-500">${formatDate(email.received_time)}</span>
-                                </div>
-                            </div>
-                        `).join('');
-                        recentEmailsElement.innerHTML = recentHtml;
-                    } else {
-                        recentEmailsElement.innerHTML = '<p class="text-gray-500 text-center py-8">沒有最近郵件</p>';
-                    }
-                }
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-                // Show error message in UI
-                const topSendersElement = document.getElementById('topSenders');
-                const recentEmailsElement = document.getElementById('recentEmails');
-                if (topSendersElement) {
-                    topSendersElement.innerHTML = '<p class="text-red-500 text-center py-8">載入失敗: ' + error.message + '</p>';
-                }
-                if (recentEmailsElement) {
-                    recentEmailsElement.innerHTML = '<p class="text-red-500 text-center py-8">載入失敗: ' + error.message + '</p>';
-                }
-            }
-        }
-
-        // 搜尋類型管理
-        let currentSearchType = 'keyword';
-
-        function setSearchType(type) {
-            currentSearchType = type;
-            
-            // 更新按鈕樣式
-            const buttons = {
-                'keyword': 'keywordSearchBtn',
-                'semantic': 'semanticSearchBtn', 
-                'summary': 'summarySearchBtn',
-                'category': 'categorySearchBtn'
-            };
-            
-            // 重置所有按鈕樣式
-            Object.values(buttons).forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                btn.className = 'px-4 py-2 bg-gray-300 text-gray-700 rounded-lg transition duration-200';
-            });
-            
-            // 啟用當前按鈕
-            const activeBtn = document.getElementById(buttons[type]);
-            activeBtn.className = 'px-4 py-2 bg-blue-500 text-white rounded-lg transition duration-200';
-            
-            // 更新說明文字和佔位符
-            const descriptions = {
-                'keyword': '使用關鍵字搜尋郵件主旨和內容',
-                'semantic': '使用 AI 理解搜尋意圖，找到語意相關的郵件',
-                'summary': '搜尋包含特定主題或內容摘要的郵件',
-                'category': '按郵件類型搜尋（工作、客戶、財務等）'
-            };
-            
-            const placeholders = {
-                'keyword': '輸入關鍵字搜尋郵件主旨和內容...',
-                'semantic': '描述您要找的郵件內容，例如：關於會議的郵件',
-                'summary': '輸入主題或內容描述，例如：季度報告',
-                'category': '輸入郵件類型，例如：工作、客戶、財務'
-            };
-            
-            document.getElementById('searchDescriptionText').textContent = descriptions[type];
-            document.getElementById('searchKeyword').placeholder = placeholders[type];
-        }
-
-        // 全域變數儲存搜尋結果
-        let currentSearchResults = [];
-        let currentSearchQuery = '';
-
-        async function searchEmails() {
-            const keyword = document.getElementById('searchKeyword').value.trim();
-            if (!keyword) {
-                alert('請輸入搜尋內容');
-                return;
-            }
-
-            let searchUrl, searchMethod, requestBody;
-            
-            // 根據搜尋類型決定 API 端點
-            switch(currentSearchType) {
-                case 'semantic':
-                    searchUrl = '/api/semantic_search';
-                    searchMethod = 'POST';
-                    requestBody = { query: keyword, limit: 20 };
-                    showLoading('語意搜尋中，AI 正在分析相關性...');
-                    break;
-                case 'summary':
-                    // TODO: 實施摘要搜尋
-                    alert('摘要搜尋功能開發中，請使用關鍵字搜尋');
-                    return;
-                case 'category':
-                    // TODO: 實施分類搜尋
-                    alert('分類搜尋功能開發中，請使用關鍵字搜尋');
-                    return;
-                default: // keyword
-                    searchUrl = '/api/search';
-                    searchMethod = 'POST';
-                    requestBody = { keyword: keyword, limit: 20 };
-                    showLoading('關鍵字搜尋中...');
-            }
-            
-            try {
-                const response = await fetch(searchUrl, {
-                    method: searchMethod,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                const data = await response.json();
-                
-                if (data.error) {
-                    alert('搜尋錯誤: ' + data.error);
-                    return;
-                }
-
-                // 儲存搜尋結果到全域變數
-                currentSearchResults = data.results;
-                currentSearchQuery = keyword;
-
-                // Update search count
-                const searchCountElement = document.getElementById('searchCount');
-                if (searchCountElement) {
-                    searchCountElement.textContent = data.count;
-                }
-
-                // Update search results
-                const searchResultsElement = document.getElementById('searchResults');
-                if (searchResultsElement) {
-                    if (data.results.length === 0) {
-                        searchResultsElement.innerHTML = `
-                            <p class="text-gray-500 text-center py-8">找不到包含 "${keyword}" 的郵件</p>
-                        `;
-                        // 清空搜尋結果
-                        currentSearchResults = [];
-                        currentSearchQuery = '';
-                    } else {
-                        const resultsHtml = data.results.map(email => {
-                            // 添加相關性分數顯示（如果是語意搜尋）
-                            const relevanceBadge = email.relevance_score ? 
-                                `<span class="ml-2 bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">相關性: ${email.relevance_score}/10</span>` : '';
-                            
-                            return `
-                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-medium text-gray-800 flex-1">${email.subject || '(無主旨)'}${relevanceBadge}</h4>
-                                    <span class="text-xs text-gray-500 ml-2">${formatDate(email.received_time)}</span>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-1">
-                                    <i class="fas fa-user mr-1"></i>${email.sender_name}
-                                </p>
-                                <p class="text-sm text-gray-500 truncate">
-                                    ${email.body ? email.body.substring(0, 100) + '...' : '(無內容)'}
-                                </p>
-                            </div>
-                        `;
-                        }).join('');
-                        searchResultsElement.innerHTML = resultsHtml;
-                    }
-                }
-
-            } catch (error) {
-                console.error('Error searching emails:', error);
-                alert('搜尋時發生錯誤');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // 方案選擇相關功能
-        function showCustomPlanModal() {
-            document.getElementById('customPlanModal').classList.remove('hidden');
-        }
-
-        function closeCustomPlanModal() {
-            document.getElementById('customPlanModal').classList.add('hidden');
-        }
-
-        function confirmCustomPlan() {
-            const emailCount = document.getElementById('customEmailCount').value;
-            const bodyLimit = document.getElementById('customBodyLimit').value;
-            
-            if (!emailCount || !bodyLimit) {
-                alert('請填寫所有設定項目');
-                return;
-            }
-            
-            closeCustomPlanModal();
-            buildDatabaseWithCustomSettings(emailCount, bodyLimit);
-        }
-
-        function buildDatabaseWithCustomSettings(emailCount, bodyLimit) {
-            if (!confirm(`確定要提取 ${emailCount} 封郵件，內文限制 ${bodyLimit} 字元嗎？`)) {
-                return;
-            }
-
-            showLoading(`提取 ${emailCount} 封郵件中，請稍候...`);
-            
-            fetch('/api/build_database_custom', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    email_count: parseInt(emailCount),
-                    body_limit: parseInt(bodyLimit)
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('提取錯誤: ' + data.error);
-                } else {
-                    alert('郵件提取完成！');
-                    loadStats(); // 重新載入統計資料
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('提取時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        // 監聽方案選擇變更
-        document.addEventListener('DOMContentLoaded', function() {
-            const planSelect = document.getElementById('planSelect');
-            if (planSelect) {
-                planSelect.addEventListener('change', function() {
-                    if (this.value === '5') {
-                        showCustomPlanModal();
-                        this.value = '2'; // 重置為預設值
-                    }
-                });
-            }
-        });
-
-        async function clearAndRebuild() {
-            if (!confirm('⚠️ 確定要清空資料庫並重新提取嗎？\n\n這將會：\n• 刪除所有現有郵件資料\n• 重新提取最新郵件\n• 確保資料為最新狀態\n\n此操作無法復原！')) {
-                return;
-            }
-            
-            showLoading('清空資料庫中，請稍候...');
-            
-            try {
-                // 先清空資料庫
-                const response = await fetch('/api/clear_database', {
-                    method: 'POST'
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    alert('清空資料庫錯誤: ' + data.error);
-                    return;
-                }
-                
-                // 清空成功後，重新載入統計並執行提取
-                alert('✅ 資料庫已清空！');
-                
-                // 重新載入統計資料
-                loadStats();
-                
-                // 延遲一下再執行提取
-                setTimeout(() => {
-                    buildDatabase();
-                }, 1000);
-            } catch (error) {
-                console.error('Error clearing database:', error);
-                alert('清空資料庫時發生錯誤');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function buildDatabase() {
-            fullIngest();
-        }
-
-        function exportData() {
-            if (currentSearchResults.length === 0) {
-                alert('請先搜尋郵件，然後再匯出搜尋結果');
-                return;
-            }
-            
-            if (!confirm(`確定要匯出搜尋結果嗎？\n關鍵字: "${currentSearchQuery}"\n郵件數量: ${currentSearchResults.length} 封`)) {
-                return;
-            }
-            
-            showLoading('匯出搜尋結果中...');
-            
-            fetch('/api/export_search_results', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    search_results: currentSearchResults,
-                    search_query: currentSearchQuery
-                })
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `search_results_${currentSearchQuery}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                
-                alert(`已匯出 ${currentSearchResults.length} 封搜尋結果郵件`);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('匯出時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('zh-TW') + ' ' + date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-            } catch {
-                return dateString;
-            }
-        }
-
-        function setupAI() {
-            if (confirm('確定要設定本地 AI 模型嗎？這將下載約 4.7GB 的模型檔案。')) {
-                showLoading('設定 AI 模型中，請稍候...');
-                
-                // 在新視窗中執行安裝腳本
-                const popup = window.open('', '_blank', 'width=800,height=600');
-                popup.document.write(`
-                    <html><head><title>AI 模型安裝</title></head><body>
-                    <h2>正在安裝 AI 模型...</h2>
-                    <p>請在命令列中執行以下指令：</p>
-                    <pre><code>python setup_ai.py</code></pre>
-                    <p>安裝完成後請重新整理此頁面。</p>
-                    </body></html>
-                `);
-                
-                hideLoading();
-            }
-        }
-
-        function checkAIStatus() {
-            fetch('/api/ai_status')
-                .then(response => response.json())
-                .then(data => {
-                    const statusElement = document.getElementById('aiStatus');
-                    const iconElement = document.getElementById('aiIcon');
-                    
-                    if (statusElement && iconElement) {
-                        if (data.available) {
-                            statusElement.textContent = `AI 可用 (${data.model})`;
-                            statusElement.className = 'text-lg font-semibold text-green-600';
-                            iconElement.className = 'fas fa-robot text-green-500 text-3xl opacity-50';
-                        } else {
-                            statusElement.textContent = 'AI 未設定';
-                            statusElement.className = 'text-lg font-semibold text-red-600';
-                            iconElement.className = 'fas fa-robot text-red-500 text-3xl opacity-50';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking AI status:', error);
-                    const statusElement = document.getElementById('aiStatus');
-                    if (statusElement) {
-                        statusElement.textContent = '檢查失敗';
-                    }
-                });
-        }
-
-        function analyzeRecentEmails() {
-            showLoading('AI 分析最近郵件中，請稍候...');
-            
-            // 獲取最近的 10 封郵件
-            fetch('/api/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ keyword: '', limit: 10 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('獲取郵件錯誤: ' + data.error);
-                    return;
-                }
-                
-                if (data.results.length === 0) {
-                    alert('沒有郵件可以分析');
-                    return;
-                }
-                
-                // 提取郵件 ID
-                const emailIds = data.results.map(email => email.id);
-                
-                return fetch('/api/ai_analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email_ids: emailIds })
-                });
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('AI 分析錯誤: ' + data.error);
-                } else {
-                    // 顯示分析結果
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = '最近郵件 AI 分析結果';
-                    reportDiv.innerHTML = data.report;
-                    
-                    alert(`AI 分析完成！分析了 ${data.count} 封郵件。`);
-                }
-            })
-            .catch(error => {
-                console.error('Error analyzing emails:', error);
-                alert('AI 分析時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function analyzeSearchResults() {
-            if (currentSearchResults.length === 0) {
-                alert('請先搜尋郵件，然後再分析搜尋結果');
-                return;
-            }
-            
-            showLoading('AI 分析搜尋結果中，請稍候...');
-            
-            const emailIds = currentSearchResults.map(email => email.id);
-            
-            fetch('/api/ai_analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email_ids: emailIds })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('AI 分析錯誤: ' + data.error);
-                } else {
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = `搜尋結果 AI 分析 ("${currentSearchQuery}")`;
-                    reportDiv.innerHTML = data.report;
-                    
-                    alert(`搜尋結果 AI 分析完成！分析了 ${data.count} 封郵件。`);
-                }
-            })
-            .catch(error => {
-                console.error('Error analyzing search results:', error);
-                alert('分析搜尋結果時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function generateEmailSummary() {
-            const subject = prompt('請輸入要摘要的郵件主旨：');
-            if (!subject) return;
-            
-            const body = prompt('請輸入郵件內容（可選）：') || '';
-            
-            showLoading('AI 生成郵件摘要中...');
-            
-            fetch('/api/generate_summary', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ subject: subject, body: body })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('摘要生成錯誤: ' + data.error);
-                } else {
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = '郵件摘要';
-                    reportDiv.innerHTML = `<strong>主旨：</strong>${subject}\n\n<strong>摘要：</strong>${data.summary}`;
-                }
-            })
-            .catch(error => {
-                console.error('Error generating summary:', error);
-                alert('生成摘要時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function extractKeyInfo() {
-            const subject = prompt('請輸入要提取重點的郵件主旨：');
-            if (!subject) return;
-            
-            const body = prompt('請輸入郵件內容：') || '';
-            
-            showLoading('AI 提取重點資訊中...');
-            
-            fetch('/api/extract_key_info', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ subject: subject, body: body })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('重點提取錯誤: ' + data.error);
-                } else {
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = '重點資訊提取';
-                    reportDiv.innerHTML = `<strong>關鍵字：</strong>${data.keywords.join(', ')}\n\n<strong>重要資訊：</strong>${data.key_points}`;
-                }
-            })
-            .catch(error => {
-                console.error('Error extracting key info:', error);
-                alert('提取重點時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function generateReplySuggestions() {
-            const subject = prompt('請輸入要回覆的郵件主旨：');
-            if (!subject) return;
-            
-            const body = prompt('請輸入原郵件內容：') || '';
-            
-            showLoading('AI 生成回覆建議中...');
-            
-            fetch('/api/generate_reply', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ subject: subject, body: body })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('回覆建議錯誤: ' + data.error);
-                } else {
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = '回覆建議';
-                    reportDiv.innerHTML = `<strong>回覆建議：</strong>\n${data.reply_suggestions}`;
-                }
-            })
-            .catch(error => {
-                console.error('Error generating reply:', error);
-                alert('生成回覆建議時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function translateEmail() {
-            const subject = prompt('請輸入要翻譯的郵件主旨：');
-            if (!subject) return;
-            
-            const body = prompt('請輸入郵件內容：') || '';
-            const targetLang = prompt('請輸入目標語言（例如：英文、日文、韓文）：') || '英文';
-            
-            showLoading('AI 翻譯郵件中...');
-            
-            fetch('/api/translate_email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ subject: subject, body: body, target_language: targetLang })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('翻譯錯誤: ' + data.error);
-                } else {
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = `郵件翻譯（${targetLang}）`;
-                    reportDiv.innerHTML = `<strong>翻譯主旨：</strong>${data.translated_subject}\n\n<strong>翻譯內容：</strong>${data.translated_body}`;
-                }
-            })
-            .catch(error => {
-                console.error('Error translating:', error);
-                alert('翻譯時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        function analyzeEmailInsights() {
-            showLoading('AI 分析郵件洞察中...');
-            
-            fetch('/api/email_insights', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('洞察分析錯誤: ' + data.error);
-                } else {
-                    const resultsDiv = document.getElementById('aiResults');
-                    const reportDiv = document.getElementById('aiReport');
-                    const titleDiv = document.getElementById('aiResultsTitle');
-                    
-                    resultsDiv.classList.remove('hidden');
-                    titleDiv.textContent = '郵件洞察分析';
-                    reportDiv.innerHTML = data.insights;
-                }
-            })
-            .catch(error => {
-                console.error('Error analyzing insights:', error);
-                alert('分析洞察時發生錯誤');
-            })
-            .finally(() => {
-                hideLoading();
-            });
-        }
-
-        // Navigation Logic
-        function showView(viewId) {
-            // Hide all views
-            document.querySelectorAll('.view-content').forEach(view => {
-                view.classList.add('hidden');
-            });
-            
-            // Show selected view
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            
-            // Update nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Find active nav item
-            event.currentTarget.classList.add('active');
-            
-            // Special handling for views
-            if (viewId === 'wiki') loadWikiIndex();
-        }
-
-        // Wiki Functions
-        function loadWikiIndex() {
-            const wikiIndex = document.getElementById('wikiIndex');
-            const wikiContent = document.getElementById('wikiContent');
-            wikiIndex.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div></div>';
-            
-            fetch('/api/wiki/index')
-                .then(response => response.json())
-                .then(data => {
-                    // Convert markdown list to actionable links
-                    const lines = data.content.split('\n');
-                    let html = '<ul class="space-y-2">';
-                    lines.forEach(line => {
-                        const match = line.match(/\[(.*?)\]\((.*?)\)/);
-                        if (match) {
-                            html += `<li><a href="#" class="block p-2 hover:bg-blue-50 rounded text-sm" onclick="loadWikiPage('${match[2]}')">${match[1]}</a></li>`;
-                        }
-                    });
-                    html += '</ul>';
-                    wikiIndex.innerHTML = html;
-                })
-                .catch(err => {
-                    wikiIndex.innerHTML = `<div class="error-message">無法載入: ${err}</div>`;
-                });
-        }
-
-        function loadWikiPage(pagePath) {
-            const wikiContent = document.getElementById('wikiContent');
-            
-            fetch(`/api/wiki/page/${pagePath}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        wikiContent.innerHTML = marked.parse(data.content);
-                        // Add back button
-                        const backBtn = document.createElement('button');
-                        backBtn.className = 'btn btn-ghost mt-6';
-                        backBtn.innerHTML = '<i class="fas fa-chevron-left mr-2"></i>返回索引';
-                        backBtn.onclick = loadWikiIndex;
-                        wikiContent.appendChild(backBtn);
-                    }
-                })
-                .catch(err => alert('載入頁面失敗: ' + err));
-        }
-
-        // Ingest Functions
-        function fullIngest() {
-            if (!confirm('將進行完整提取（含附件），這可能需要較長時間。確定繼續？')) return;
-            
-            showLoading('正在進行完整提取與附件儲存...');
-            fetch('/api/ingest', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert('提取失敗: ' + data.error + '\n' + (data.details || ''));
-                    } else {
-                        alert('完整提取完成！');
-                        location.reload();
-                    }
-                })
-                .catch(err => alert('發生錯誤: ' + err))
-                .finally(() => hideLoading());
-        }
-
-        function buildWiki() {
-            showLoading('正在分析郵件並建構知識庫 (Karpathy Pattern)...');
-            fetch('/api/build_wiki', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert('Wiki 建構失敗: ' + data.error + '\n' + (data.details || ''));
-                    } else {
-                        alert('Wiki 建構完成！');
-                    }
-                })
-                .catch(err => alert('發生錯誤: ' + err))
-                .finally(() => hideLoading());
-        }
-
-        function askWiki() {
-            const query = document.getElementById('wikiQuery').value;
-            if (!query) return;
-            
-            const answerDiv = document.getElementById('wikiAnswer');
-            answerDiv.classList.remove('hidden');
-            answerDiv.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">AI 正在深度檢索並分析中...</div></div>';
-            
-            fetch('/api/ask_wiki', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        answerDiv.innerHTML = `<div class="error-message">錯誤: ${data.error}</div>`;
-                    } else {
-                        answerDiv.innerHTML = marked.parse(data.answer);
-                    }
-                })
-                .catch(err => {
-                    answerDiv.innerHTML = `<div class="error-message">發生錯誤: ${err}</div>`;
-                });
-        }
-
-        // Handle Enter key in search
-        const searchKeywordElement = document.getElementById('searchKeyword');
-        if (searchKeywordElement) {
-            searchKeywordElement.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchEmails();
-                }
-            });
-        }
-    </script>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-[100]">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-10 text-center shadow-2xl">
+            <div class="loading-spinner mx-auto mb-6"></div>
+            <p id="loadingMessage" class="text-xl font-bold">全量同步中，請稍候...</p>
+            <p class="text-gray-500 mt-2">系統正在處理 Outlook 資料與建構索引</p>
+        </div>
+    </div>
 </body>
 </html>

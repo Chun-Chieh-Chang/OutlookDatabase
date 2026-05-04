@@ -25,6 +25,14 @@ except:
 # Configuration
 DB_NAME = 'emails.db'
 
+# Extraction Plans
+PLANS = {
+    '1': {'name': '超快速測試', 'emails': 10, 'body_limit': 200},
+    '2': {'name': '日常使用', 'emails': 50, 'body_limit': 500},
+    '3': {'name': '完整更新', 'emails': 200, 'body_limit': 1000},
+    '4': {'name': '完整匯入', 'emails': 500, 'body_limit': 2000}
+}
+
 def get_connection():
     """Get database connection"""
     return sqlite3.connect(DB_NAME)
@@ -389,12 +397,8 @@ def build_database_plan():
         data = request.get_json()
         plan_id = data.get('plan_id', '2')  # Default to plan 2
         
-        # Import the menu builder to use plan configurations
-        import outlook_builder_menu
-        
         # Get plan configuration
-        plans = outlook_builder_menu.PLANS
-        plan = plans.get(plan_id, plans['2'])  # Default to plan 2 if not found
+        plan = PLANS.get(plan_id, PLANS['2'])  
         
         if plan_id == '5':  # Custom plan
             return jsonify({'error': 'Custom plan should use /api/build_database_custom endpoint'}), 400
@@ -403,11 +407,12 @@ def build_database_plan():
         body_limit = plan['body_limit']
         
         # Run extraction with plan settings
-        extracted_count = outlook_builder_menu.extract_emails_with_settings(email_count, body_limit)
+        import outlook_ingestor
+        outlook_ingestor.ingest_emails(max_emails=email_count, body_limit=body_limit)
         
         return jsonify({
             'message': f'Plan {plan_id} completed',
-            'extracted_count': extracted_count,
+            'extracted_count': email_count,
             'plan_name': plan['name']
         })
     except Exception as e:
@@ -424,18 +429,14 @@ def build_database_custom():
         # Validate inputs
         if email_count < 1 or email_count > 1000:
             return jsonify({'error': 'Email count must be between 1 and 1000'}), 400
-        if body_limit < 50 or body_limit > 1000:
-            return jsonify({'error': 'Body limit must be between 50 and 1000'}), 400
-        
-        # Import the menu builder
-        import outlook_builder_menu
         
         # Run extraction with custom settings
-        extracted_count = outlook_builder_menu.extract_emails_with_settings(email_count, body_limit)
+        import outlook_ingestor
+        outlook_ingestor.ingest_emails(max_emails=email_count, body_limit=body_limit)
         
         return jsonify({
             'message': 'Custom extraction completed',
-            'extracted_count': extracted_count,
+            'extracted_count': email_count,
             'email_count': email_count,
             'body_limit': body_limit
         })
@@ -446,9 +447,8 @@ def build_database_custom():
 def build_database():
     """Trigger database building"""
     try:
-        import outlook_db_builder
-        # This would run in background in production
-        outlook_db_builder.extract_emails()
+        import outlook_ingestor
+        outlook_ingestor.ingest_emails(max_emails=50)
         return jsonify({'message': 'Database building completed'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -508,6 +508,28 @@ def run_build_wiki():
             return jsonify({'message': 'Wiki build complete', 'output': result.stdout})
         else:
             return jsonify({'error': 'Wiki build failed', 'details': result.stderr}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/full_pipeline', methods=['POST'])
+def run_full_pipeline():
+    """Run Ingest + Wiki Builder sequentially"""
+    try:
+        # Step 1: Ingest
+        ingest_result = subprocess.run(['python', 'outlook_ingestor.py'], capture_output=True, text=True, encoding='utf-8')
+        if ingest_result.returncode != 0:
+            return jsonify({'error': 'Ingest stage failed', 'details': ingest_result.stderr}), 500
+            
+        # Step 2: Build Wiki
+        wiki_result = subprocess.run(['python', 'wiki_builder.py'], capture_output=True, text=True, encoding='utf-8')
+        if wiki_result.returncode != 0:
+            return jsonify({'error': 'Wiki build stage failed', 'details': wiki_result.stderr}), 500
+            
+        return jsonify({
+            'message': 'Full pipeline complete!',
+            'ingest_output': ingest_result.stdout,
+            'wiki_output': wiki_result.stdout
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
