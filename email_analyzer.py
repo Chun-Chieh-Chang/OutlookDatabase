@@ -21,75 +21,109 @@ class EmailAnalyzer:
     def __init__(self, config_file='ai_config.json'):
         """初始化分析器"""
         self.load_config(config_file)
-        self.base_url = self.config['ollama']['url']
-        self.model = self.config['ollama']['model']
-        self.timeout = self.config['ollama']['timeout']
+        self.provider = self.config.get('provider', 'ollama')
+        
+        # Ollama Config
+        self.ollama_url = self.config['ollama']['url']
+        self.ollama_model = self.config['ollama']['model']
+        self.ollama_timeout = self.config['ollama']['timeout']
+        
+        # Google Config
+        self.google_api_key = self.config.get('google', {}).get('api_key', '')
+        self.google_model = self.config.get('google', {}).get('model', 'gemini-1.5-flash')
+        
+        # Current Active Model Info
+        self.model = self.google_model if self.provider == 'google' else self.ollama_model
         
     def load_config(self, config_file):
         """載入設定檔"""
         try:
             with open(config_file, 'r', encoding='utf-8') as f:
                 self.config = json.load(f)
-        except FileNotFoundError:
-            # 使用預設設定
+        except Exception:
             self.config = {
-                "ollama": {
-                    "url": "http://localhost:11434",
-                    "model": "llama3:8b",
-                    "timeout": 60
-                },
-                "analysis": {
-                    "max_email_length": 1000,
-                    "batch_size": 5,
-                    "cache_results": True
-                }
+                "provider": "ollama",
+                "ollama": {"url": "http://localhost:11434", "model": "llama3.2:latest", "timeout": 60},
+                "google": {"api_key": "", "model": "gemini-1.5-flash"}
             }
     
     def check_ollama_connection(self):
-        """檢查 Ollama 連接"""
-        try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=5)
-            return response.status_code == 200
-        except:
-            return False
+        """檢查 AI 連接 (相容舊介面)"""
+        if self.provider == 'google':
+            if not self.google_api_key or "YOUR_GEMINI" in self.google_api_key:
+                return False
+            # 簡單測試 API Key 是否有效
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.google_model}:generateContent?key={self.google_api_key}"
+                resp = requests.post(url, json={"contents": [{"parts":[{"text":"hi"}]}]}, timeout=5)
+                return resp.status_code == 200
+            except:
+                return False
+        else:
+            try:
+                response = requests.get(f"{self.ollama_url}/api/tags", timeout=5)
+                if response.status_code == 200:
+                    models = response.json().get('models', [])
+                    model_names = [m['name'] for m in models]
+                    return self.ollama_model in model_names or f"{self.ollama_model}:latest" in model_names
+                return False
+            except:
+                return False
     
     def call_ollama(self, prompt, system_prompt=None):
-        """呼叫 Ollama API"""
+        """AI 呼叫調度器 (相容舊介面)"""
+        if self.provider == 'google':
+            return self.call_gemini(prompt, system_prompt)
+        
         try:
             payload = {
-                "model": self.model,
+                "model": self.ollama_model,
                 "prompt": prompt,
                 "stream": False,
-                "options": {
-                    "temperature": 0.1,  # 降低隨機性
-                    "top_p": 0.9,
-                    "max_tokens": 100   # 限制回應長度
+                "options": {"temperature": 0.1, "top_p": 0.9}
+            }
+            if system_prompt: payload["system"] = system_prompt
+            
+            response = requests.post(f"{self.ollama_url}/api/generate", json=payload, timeout=self.ollama_timeout)
+            if response.status_code == 200:
+                return response.json().get('response', '').strip() or "模型回應為空"
+            return f"Ollama API 錯誤: {response.status_code}"
+        except Exception as e:
+            return f"Ollama 連接錯誤: {str(e)}"
+
+    def call_gemini(self, prompt, system_prompt=None):
+        """呼叫 Google Gemini API"""
+        if not self.google_api_key or "YOUR_GEMINI" in self.google_api_key:
+            return "錯誤: 請先在 ai_config.json 中設定 Gemini API Key"
+        
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.google_model}:generateContent?key={self.google_api_key}"
+            
+            full_prompt = f"{system_prompt}\n\nUser Question: {prompt}" if system_prompt else prompt
+            
+            payload = {
+                "contents": [{
+                    "parts": [{"text": full_prompt}]
+                }],
+                "generationConfig": {
+                    "temperature": 0.1,
+                    "topK": 1,
+                    "topP": 1,
+                    "maxOutputTokens": 2048,
                 }
             }
             
-            if system_prompt:
-                payload["system"] = system_prompt
-            
-            response = requests.post(
-                f"{self.base_url}/api/generate",
-                json=payload,
-                timeout=self.timeout
-            )
-            
+            response = requests.post(url, json=payload, timeout=120)
             if response.status_code == 200:
                 result = response.json()
-                response_text = result.get('response', '')
-                if response_text:
-                    return response_text.strip()
-                else:
-                    return "模型回應為空"
+                try:
+                    return result['candidates'][0]['content']['parts'][0]['text'].strip()
+                except (KeyError, IndexError):
+                    return "Gemini 回傳格式異常"
             else:
-                return f"API 錯誤: {response.status_code}"
-                
-        except requests.exceptions.Timeout:
-            return "請求超時，模型處理時間過長"
+                return f"Gemini API 錯誤: {response.status_code} - {response.text}"
         except Exception as e:
-            return f"連接錯誤: {str(e)}"
+            return f"Gemini 連接錯誤: {str(e)}"
     
     def summarize_email(self, subject, body, sender):
         """生成郵件摘要"""

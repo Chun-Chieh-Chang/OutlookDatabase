@@ -1,422 +1,226 @@
-/**
- * SkillsBuilder Main Application Logic
- * Project: Outlook Database Tool
- * Architecture: State-Driven Workflow
- */
+// SkillsBuilder Lite - Main JS
+// Digital Art Director & Architect Edition
 
-// Global State
-let currentSearchType = 'keyword';
-let currentSearchResults = [];
-let currentSearchQuery = '';
-
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardStats();
+    checkAIStatus();
+    loadRecentEmails();
+    
+    // 定期更新
+    setInterval(loadDashboardStats, 30000);
+    setInterval(checkAIStatus, 15000);
 });
 
-function initializeApp() {
-    console.log('SkillsBuilder Lite Activated');
+// Global State
+let searchState = {
+    keyword: '',
+    page: 1,
+    totalPages: 1
+};
+
+// UI Logic
+function showLoading(msg = '處理中...') {
+    const overlay = document.getElementById('loadingOverlay');
+    const message = document.getElementById('loadingMessage');
+    const logContainer = document.getElementById('log-container');
     
-    // Check if database exists (passed from Flask)
-    const dbExists = window.DB_EXISTS || false;
-    
-    loadStats(); // Always try to load stats
-    
-    // Check AI status
-    checkAIStatus();
-    
-    // Initialize Search Listeners
-    const searchKeywordElement = document.getElementById('searchKeyword');
-    if (searchKeywordElement) {
-        searchKeywordElement.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const val = searchKeywordElement.value.trim();
-                if (val.includes('?') || val.length > 10) {
-                    askWiki();
-                } else {
-                    searchEmails();
-                }
-            }
-        });
-    }
-
-    // Initialize Mobile Toggle (if still relevant, though mostly removed)
-    const mobileToggle = document.getElementById('mobileMenuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    if (mobileToggle && sidebar) {
-        mobileToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-    }
-}
-
-// Workflow Logic
-function updateWorkflowIndicators(step) {
-    const indicators = {
-        1: document.getElementById('step1-indicator'),
-        2: document.getElementById('step2-indicator'),
-        3: document.getElementById('step3-indicator')
-    };
-
-    Object.keys(indicators).forEach(s => {
-        const el = indicators[s];
-        if (!el) return;
-        
-        if (s < step) {
-            el.className = 'flex items-center space-x-2 text-brand-success';
-            el.querySelector('.w-8').innerHTML = '<i class="fas fa-check text-xs"></i>';
-        } else if (s == step) {
-            el.className = 'flex items-center space-x-2 text-brand-accent';
-        } else {
-            el.className = 'flex items-center space-x-2 text-gray-400';
-        }
-    });
-}
-
-function setEmptyState() {
-    const elements = ['topSenders', 'recentEmails'];
-    elements.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = '<p class="text-gray-500 text-center py-8">請先提取郵件資料</p>';
-    });
-}
-
-// UI Helpers
-function showLoading(message = '處理中...') {
-    const loadingMessage = document.getElementById('loadingMessage');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingMessage) loadingMessage.textContent = message;
-    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+    if (overlay) overlay.classList.remove('hidden');
+    if (message) message.textContent = msg;
+    if (logContainer) logContainer.classList.add('hidden');
 }
 
 function hideLoading() {
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('hidden');
 }
 
-function formatDate(dateString) {
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('zh-TW') + ' ' + date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-    } catch {
-        return dateString;
-    }
+function showInlineLoading(msg = '處理中...') {
+    const el = document.getElementById('inlineLoading');
+    const msgEl = document.getElementById('inlineLoadingMessage');
+    if (el) el.classList.remove('hidden');
+    if (msgEl) msgEl.textContent = msg;
+    
+    // Hide results while loading for better focus
+    document.getElementById('searchResultsCard').classList.add('hidden');
+    document.getElementById('wikiAnswer').classList.add('hidden');
 }
 
-// Navigation
-function showView(viewId, event) {
+function hideInlineLoading() {
+    const el = document.getElementById('inlineLoading');
+    if (el) el.classList.add('hidden');
+}
+
+function showView(viewId) {
     if (viewId === 'wiki') {
-        const wikiModal = document.getElementById('view-wiki');
-        if (wikiModal) {
-            wikiModal.classList.remove('hidden');
-            loadWikiIndex();
-        }
-        return;
-    }
-
-    document.querySelectorAll('.view-content').forEach(view => {
-        view.classList.add('hidden');
-    });
-    
-    const targetView = document.getElementById(`view-${viewId}`);
-    if (targetView) targetView.classList.remove('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Find the link that was clicked
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-    } else if (window.event && window.event.currentTarget) {
-        window.event.currentTarget.classList.add('active');
+        document.getElementById('view-wiki').classList.remove('hidden');
+        loadWikiIndex();
     }
 }
 
-// API Integration - Stats
-async function loadStats() {
-    try {
-        const response = await fetch('/api/stats');
-        const data = await response.json();
-        
-        if (data.error) throw new Error(data.error);
+function loadDashboardStats() {
+    fetch('/api/dashboard_stats')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('dashEntityCount').textContent = data.entity_count || 0;
+            document.getElementById('dashConceptCount').textContent = data.concept_count || 0;
+            document.getElementById('dashSenderCount').textContent = data.unique_senders || 0;
+            document.getElementById('dashTotalMails').textContent = data.total_emails || 0;
+        })
+        .catch(err => console.error('Dashboard Stats Error:', err));
+}
 
-        const totalEmailsElement = document.getElementById('totalEmails');
-        if (totalEmailsElement) totalEmailsElement.textContent = data.total_emails.toLocaleString();
-
-        const recentEmailsElement = document.getElementById('recentEmails');
-        if (recentEmailsElement && data.recent_emails) {
-            if (data.recent_emails.length === 0) {
-                recentEmailsElement.innerHTML = '<p class="text-gray-400 text-center py-4">尚無郵件</p>';
-            } else {
-                recentEmailsElement.innerHTML = data.recent_emails.map(email => `
-                    <div class="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded transition-colors border-b border-gray-50 dark:border-slate-800 last:border-0">
-                        <p class="font-bold truncate">${email.subject || '(無主旨)'}</p>
-                        <div class="flex justify-between text-xs text-gray-400">
-                            <span>${email.sender_name}</span>
-                            <span>${formatDate(email.received_time).split(' ')[0]}</span>
+function loadRecentEmails() {
+    fetch('/api/stats')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('recentEmails');
+            if (data.recent_emails && data.recent_emails.length > 0) {
+                container.innerHTML = data.recent_emails.map(email => `
+                    <div class="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all cursor-default">
+                        <div class="truncate mr-4">
+                            <div class="font-bold text-slate-700 dark:text-slate-200">${email.subject}</div>
+                            <div class="text-[10px] text-slate-400">${email.sender_name}</div>
                         </div>
+                        <div class="text-[10px] text-slate-400 whitespace-nowrap">${email.received_time.split(' ')[0]}</div>
                     </div>
                 `).join('');
-            }
-        }
-    } catch (error) {
-        console.error('Stats Error:', error);
-    }
-}
-
-// API Integration - Search
-function setSearchType(type) {
-    currentSearchType = type;
-    const buttons = ['keyword', 'semantic', 'summary', 'category'];
-    
-    buttons.forEach(btnId => {
-        const btn = document.getElementById(`${btnId}SearchBtn`);
-        if (btn) btn.classList.toggle('active', btnId === type);
-    });
-    
-    const descriptions = {
-        'keyword': '使用關鍵字搜尋郵件主旨和內容',
-        'semantic': '使用 AI 理解搜尋意圖，找到語意相關的郵件',
-        'summary': '搜尋包含特定主題或內容摘要的郵件',
-        'category': '按郵件類型搜尋（工作、客戶、財務等）'
-    };
-    
-    const placeholders = {
-        'keyword': '輸入關鍵字搜尋...',
-        'semantic': '描述您要找的內容，例如：關於合約的郵件',
-        'summary': '輸入主題或摘要內容...',
-        'category': '輸入類型，例如：財務'
-    };
-    
-    document.getElementById('searchDescriptionText').textContent = descriptions[type];
-    document.getElementById('searchKeyword').placeholder = placeholders[type];
-}
-
-async function searchEmails() {
-    const keyword = document.getElementById('searchKeyword').value.trim();
-    if (!keyword) return;
-
-    let searchUrl = '/api/search';
-    let requestBody = { keyword, limit: 20 };
-    
-    if (currentSearchType === 'semantic') {
-        searchUrl = '/api/semantic_search';
-        requestBody = { query: keyword, limit: 20 };
-        showLoading('AI 正在進行語意檢索...');
-    } else {
-        showLoading('搜尋中...');
-    }
-    
-    try {
-        const response = await fetch(searchUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
-
-        currentSearchResults = data.results;
-        currentSearchQuery = keyword;
-
-        const countEl = document.getElementById('searchCount');
-        if (countEl) countEl.textContent = data.count;
-
-        const resultsEl = document.getElementById('searchResults');
-        if (resultsEl) {
-            if (data.results.length === 0) {
-                resultsEl.innerHTML = `<p class="text-gray-500 text-center py-8">找不到 "${keyword}" 的相關郵件</p>`;
             } else {
-                resultsEl.innerHTML = data.results.map(email => {
-                    const relevance = email.relevance_score ? 
-                        `<span class="ml-2 bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">相關性: ${email.relevance_score}</span>` : '';
-                    
-                    return `
-                        <div class="border border-gray-100 dark:border-slate-700 rounded-xl p-4 hover:shadow-lg transition-all bg-white dark:bg-slate-800 mb-2">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-gray-800 dark:text-slate-100 flex-1">${email.subject || '(無主旨)'}${relevance}</h4>
-                                <span class="text-xs text-gray-400 ml-2">${formatDate(email.received_time)}</span>
-                            </div>
-                            <p class="text-sm text-blue-600 dark:text-blue-400 mb-2"><i class="fas fa-user-circle mr-1"></i>${email.sender_name}</p>
-                            <p class="text-sm text-gray-500 line-clamp-2">${email.body || ''}</p>
-                        </div>
-                    `;
-                }).join('');
-            }
-        }
-    } catch (error) {
-        console.error('Search Error:', error);
-        alert('搜尋失敗: ' + error.message);
-    } finally {
-        hideLoading();
-    }
-}
-
-// AI Functions
-function checkAIStatus() {
-    fetch('/api/ai_status')
-        .then(response => response.json())
-        .then(data => {
-            const statusEl = document.getElementById('aiStatus');
-            if (statusEl) {
-                if (data.available) {
-                    statusEl.textContent = `AI 在線 (${data.model})`;
-                    statusEl.className = 'stat-value text-emerald-500';
-                } else {
-                    statusEl.textContent = 'AI 離線';
-                    statusEl.className = 'stat-value text-rose-500';
-                }
+                container.innerHTML = '<div class="p-4 text-center text-slate-400">尚無提取紀錄</div>';
             }
         });
 }
 
-function analyzeRecentEmails() {
-    showLoading('AI 正在分析最近郵件趨勢...');
+function searchEmails(page = 1) {
+    const keyword = document.getElementById('searchKeyword').value;
+    if (!keyword) return;
+    
+    // Reset state if it's a new keyword
+    if (keyword !== searchState.keyword) {
+        searchState.keyword = keyword;
+        searchState.page = 1;
+    } else {
+        searchState.page = page;
+    }
+    
+    showInlineLoading(searchState.page === 1 ? '搜尋中...' : `正在載入第 ${searchState.page} 頁...`);
+    
     fetch('/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: '', limit: 10 })
+        body: JSON.stringify({ 
+            keyword: searchState.keyword,
+            page: searchState.page,
+            limit: 20
+        })
     })
     .then(r => r.json())
     .then(data => {
-        const emailIds = data.results.map(e => e.id);
-        return fetch('/api/ai_analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email_ids: emailIds })
-        });
+        const container = document.getElementById('searchResults');
+        const card = document.getElementById('searchResultsCard');
+        const dashboard = document.getElementById('dashboardInitial');
+        const wikiAnswer = document.getElementById('wikiAnswer');
+        const pagination = document.getElementById('pagination');
+        
+        dashboard.classList.add('hidden');
+        wikiAnswer.classList.add('hidden');
+        card.classList.remove('hidden');
+        
+        const countEl = document.getElementById('searchCount');
+        if (countEl) countEl.textContent = `共找到 ${data.total_count} 筆結果`;
+        
+        searchState.totalPages = data.total_pages;
+        
+        if (data.results && data.results.length > 0) {
+            container.innerHTML = data.results.map(res => `
+                <div class="p-4 border-b border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all rounded-2xl">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold text-blue-500">${res.sender_name}</span>
+                        <span class="text-xs text-slate-400">${res.received_time}</span>
+                    </div>
+                    <div class="font-bold mb-2 text-slate-800 dark:text-slate-100">${res.subject}</div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">${res.body}</div>
+                </div>
+            `).join('');
+            
+            // Update Pagination UI
+            if (searchState.totalPages > 1) {
+                pagination.classList.remove('hidden');
+                document.getElementById('pageInfo').textContent = `第 ${data.page} / ${data.total_pages} 頁`;
+                document.getElementById('prevPage').disabled = data.page <= 1;
+                document.getElementById('nextPage').disabled = data.page >= data.total_pages;
+                
+                // Add visual feedback for disabled buttons
+                document.getElementById('prevPage').style.opacity = data.page <= 1 ? '0.5' : '1';
+                document.getElementById('nextPage').style.opacity = data.page >= data.total_pages ? '0.5' : '1';
+            } else {
+                pagination.classList.add('hidden');
+            }
+            
+            // Scroll to top of results if on a new page
+            if (page > 1) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            container.innerHTML = '<div class="p-8 text-center text-slate-400">未找到相關郵件</div>';
+            pagination.classList.add('hidden');
+        }
     })
-    .then(r => r.json())
-    .then(showAIResults)
-    .catch(err => alert('分析失敗: ' + err))
-    .finally(hideLoading);
+    .finally(hideInlineLoading);
 }
 
-function showAIResults(data) {
-    if (data.error) return alert(data.error);
-    const resultsDiv = document.getElementById('aiResults');
-    const reportDiv = document.getElementById('aiReport');
-    resultsDiv.classList.remove('hidden');
-    reportDiv.innerHTML = data.report;
-    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+function changePage(delta) {
+    const newPage = searchState.page + delta;
+    if (newPage >= 1 && newPage <= searchState.totalPages) {
+        searchEmails(newPage);
+    }
 }
 
-function closeAIResults() {
-    document.getElementById('aiResults').classList.add('hidden');
-}
-
-// AI Tools Extension
-function analyzeSearchResults() {
-    if (currentSearchResults.length === 0) return alert('請先進行搜尋');
-    showLoading('AI 正在分析搜尋結果...');
+function askWiki() {
+    const query = document.getElementById('searchKeyword').value;
+    if (!query) return;
     
-    const emailIds = currentSearchResults.slice(0, 10).map(e => e.id || e.entry_id);
-    fetch('/api/ai_analyze', {
+    showInlineLoading('AI 思考中...');
+    fetch('/api/ask_wiki', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email_ids: emailIds })
-    })
-    .then(r => r.json())
-    .then(showAIResults)
-    .catch(err => alert('分析失敗: ' + err))
-    .finally(hideLoading);
-}
-
-function generateEmailSummary() {
-    if (currentSearchResults.length === 0) return alert('請先搜尋並選擇一封郵件');
-    const email = currentSearchResults[0];
-    showLoading('AI 正在生成摘要...');
-    
-    fetch('/api/generate_summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject: email.subject, body: email.body })
+        body: JSON.stringify({ query: query })
     })
     .then(r => r.json())
     .then(data => {
-        showAIResults({ report: `### 郵件摘要: ${data.subject}\n\n${data.summary}` });
+        const wikiAnswer = document.getElementById('wikiAnswer');
+        const dashboard = document.getElementById('dashboardInitial');
+        const searchCard = document.getElementById('searchResultsCard');
+        
+        dashboard.classList.add('hidden');
+        searchCard.classList.add('hidden');
+        wikiAnswer.classList.remove('hidden');
+        
+        if (data.error) {
+            wikiAnswer.innerHTML = `<div class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle mr-2"></i>API 錯誤: ${data.error}</div>`;
+        } else {
+            // Using marked if available
+            const formattedAnswer = typeof marked !== 'undefined' ? marked.parse(data.answer) : data.answer.replace(/\n/g, '<br>');
+            wikiAnswer.innerHTML = `
+                <div class="flex items-center gap-2 mb-6 text-indigo-500 font-bold border-b border-indigo-100 dark:border-indigo-900/30 pb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 12L2.1 12.1"/><path d="M12 12l9.9-0.1"/><path d="M12 12V22"/><path d="M12 12l-7-7"/><path d="M12 12l7 7"/></svg>
+                    AI 深度分析結果
+                </div>
+                <div class="text-slate-700 dark:text-slate-200 leading-relaxed">${formattedAnswer}</div>
+            `;
+        }
     })
-    .catch(err => alert('生成失敗: ' + err))
-    .finally(hideLoading);
+    .catch(err => {
+        const wikiAnswer = document.getElementById('wikiAnswer');
+        wikiAnswer.classList.remove('hidden');
+        wikiAnswer.innerHTML = `<div class="text-rose-500 font-bold">API 錯誤: ${err.message}</div>`;
+    })
+    .finally(hideInlineLoading);
 }
 
-function extractKeyInfo() {
-    if (currentSearchResults.length === 0) return alert('請先搜尋並選擇一封郵件');
-    const email = currentSearchResults[0];
-    showLoading('AI 正在提取重點...');
-    
-    fetch('/api/extract_key_info', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject: email.subject, body: email.body })
-    })
-    .then(r => r.json())
-    .then(data => {
-        let report = `### 重點提取: ${email.subject}\n\n`;
-        report += `**關鍵字:** ${data.keywords.join(', ')}\n\n`;
-        report += `**重點摘要:**\n${data.key_points}`;
-        showAIResults({ report });
-    })
-    .catch(err => alert('提取失敗: ' + err))
-    .finally(hideLoading);
-}
-
-function generateReplySuggestions() {
-    if (currentSearchResults.length === 0) return alert('請先搜尋並選擇一封郵件');
-    const email = currentSearchResults[0];
-    showLoading('AI 正在生成回覆建議...');
-    
-    fetch('/api/generate_reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject: email.subject, body: email.body })
-    })
-    .then(r => r.json())
-    .then(data => {
-        showAIResults({ report: `### 回覆建議\n\n${data.reply_suggestions}` });
-    })
-    .catch(err => alert('生成失敗: ' + err))
-    .finally(hideLoading);
-}
-
-function translateEmail() {
-    if (currentSearchResults.length === 0) return alert('請先搜尋並選擇一封郵件');
-    const email = currentSearchResults[0];
-    const targetLang = prompt('請輸入目標語言 (例如：英文, 日文):', '英文');
-    if (!targetLang) return;
-    
-    showLoading('AI 正在翻譯...');
-    fetch('/api/translate_email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject: email.subject, body: email.body, target_language: targetLang })
-    })
-    .then(r => r.json())
-    .then(data => {
-        showAIResults({ report: `### 翻譯結果 (${data.target_language})\n\n**主旨:** ${data.translated_subject}\n\n**內容:**\n${data.translated_body}` });
-    })
-    .catch(err => alert('翻譯失敗: ' + err))
-    .finally(hideLoading);
-}
-
-function analyzeEmailInsights() {
-    showLoading('AI 正在生成全量洞察...');
-    fetch('/api/email_insights', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        showAIResults({ report: `### 郵件資料庫洞察報告\n\n${data.insights}` });
-    })
-    .catch(err => alert('分析失敗: ' + err))
-    .finally(hideLoading);
-}
-
-// Wiki Logic
 function loadWikiIndex() {
     const wikiIndex = document.getElementById('wikiIndex');
+    const wikiContent = document.getElementById('wikiContent');
+    
     wikiIndex.innerHTML = '<div class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></div>';
     
     fetch('/api/wiki/index')
@@ -424,13 +228,33 @@ function loadWikiIndex() {
         .then(data => {
             const lines = data.content.split('\n');
             let html = '<div class="space-y-1">';
+            
+            if (data.content.includes('尚未建構')) {
+                wikiContent.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center p-12">
+                        <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">知識圖譜尚未建構</h3>
+                        <p class="text-slate-500 mb-8 max-w-md">我們需要透過 AI 分析您的郵件，提取出專案、人物與核心概念，才能建立連結。</p>
+                        <button onclick="buildWikiFromModal()" class="btn btn-primary btn-lg px-10 py-4 shadow-xl shadow-blue-500/20">
+                            <i class="fas fa-magic mr-2"></i> 立即啟動 AI 建構
+                        </button>
+                    </div>
+                `;
+                wikiIndex.innerHTML = '';
+                return;
+            }
+
             lines.forEach(line => {
                 const match = line.match(/\[(.*?)\]\((.*?)\)/);
                 if (match) {
+                    const name = match[1];
+                    const path = match[2];
                     html += `
-                        <button onclick="loadWikiPage('${match[2]}')" class="w-full text-left p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 text-sm transition-colors flex items-center gap-2">
-                            <i class="fas fa-file-alt text-blue-400"></i>
-                            <span>${match[1]}</span>
+                        <button onclick="loadWikiPage('${path}')" class="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all text-sm flex items-center gap-3 group">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-all"></span>
+                            <span class="truncate">${name}</span>
                         </button>`;
                 }
             });
@@ -446,131 +270,225 @@ function loadWikiPage(path) {
     fetch(`/api/wiki/page/${path}`)
         .then(r => r.json())
         .then(data => {
+            const formatted = typeof marked !== 'undefined' ? marked.parse(data.content) : data.content;
             contentEl.innerHTML = `
                 <div class="prose dark:prose-invert max-w-none">
-                    ${marked.parse(data.content)}
+                    ${formatted}
                 </div>
-                <button onclick="loadWikiIndex()" class="btn btn-secondary mt-8">
-                    <i class="fas fa-arrow-left mr-2"></i>返回索引
-                </button>
+                <button onclick="loadWikiIndex()" class="btn btn-secondary mt-8"><i class="fas fa-arrow-left mr-2"></i>返回索引</button>
             `;
         });
 }
 
-async function askWiki() {
-    const query = document.getElementById('wikiQuery').value;
-    if (!query) return;
+function buildWikiFromModal() {
+    // 隱藏 Wiki 視窗並啟動流式進度條，避免超時
+    document.getElementById('view-wiki').classList.add('hidden');
+    runPipelineWithStream();
+}
+
+function checkAIStatus() {
+    fetch('/api/ai_status')
+        .then(response => response.json())
+        .then(data => {
+            const statusEl = document.getElementById('aiStatus');
+            if (statusEl) {
+                if (data.available) {
+                    statusEl.textContent = `AI 在線 (${data.model})`;
+                    statusEl.className = 'text-emerald-500';
+                } else {
+                    statusEl.textContent = 'AI 離線 (點擊重連)';
+                    statusEl.className = 'text-rose-500 hover:underline';
+                }
+            }
+        });
+}
+
+function reconnectAI() {
+    const statusEl = document.getElementById('aiStatus');
+    if (statusEl) statusEl.textContent = '嘗試重連中...';
+    fetch('/api/ai_reconnect', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.available) {
+                alert('✅ AI 服務重連成功: ' + data.model);
+            } else {
+                alert('❌ 重連失敗，請檢查 Ollama 是否運行');
+            }
+            checkAIStatus();
+        });
+}
+
+async function runPipelineWithStream() {
+    const overlay = document.getElementById('loadingOverlay');
+    const message = document.getElementById('loadingMessage');
+    const logContainer = document.getElementById('log-container');
     
-    const answerDiv = document.getElementById('wikiAnswer');
-    answerDiv.classList.remove('hidden');
-    answerDiv.innerHTML = '<div class="p-8 text-center"><div class="loading-spinner mx-auto mb-4"></div><p>AI 正在分析知識庫，請稍候...</p></div>';
+    if (overlay) overlay.classList.remove('hidden');
+    if (logContainer) {
+        logContainer.classList.remove('hidden');
+        logContainer.innerHTML = '';
+    }
     
     try {
-        const response = await fetch('/api/ask_wiki', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
-        });
-        const data = await response.json();
-        answerDiv.innerHTML = marked.parse(data.answer || data.error);
+        const response = await fetch('/api/pipeline/stream');
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            
+            lines.forEach(line => {
+                if (line.startsWith('data: ')) {
+                    const content = line.replace('data: ', '').trim();
+                    if (content) {
+                        const logLine = document.createElement('div');
+                        logLine.className = 'py-0.5 border-b border-slate-700/30 last:border-0';
+                        if (content.includes('🚀') || content.includes('🧠')) logLine.className += ' text-blue-400 font-bold mt-2';
+                        if (content.includes('✅') || content.includes('✨')) logLine.className += ' text-emerald-400';
+                        logLine.textContent = content;
+                        logContainer.appendChild(logLine);
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                        
+                        if (content.includes('🚀')) message.textContent = '正在提取郵件...';
+                        if (content.includes('🧠')) message.textContent = '正在建構知識圖譜...';
+                    }
+                }
+            });
+        }
+        
+        if (logContainer.innerText.includes('✅')) {
+            alert('✅ 全流程執行成功！');
+            location.reload();
+        } else {
+            setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 3000);
+        }
     } catch (err) {
-        answerDiv.innerHTML = `<p class="text-rose-500">檢索失敗: ${err.message}</p>`;
+        alert('系統錯誤: ' + err.message);
+        if (overlay) overlay.classList.add('hidden');
     }
 }
 
-// Maintenance
-function buildDatabase() {
-    const activePlan = document.querySelector('.plan-option.active');
-    const planId = activePlan ? activePlan.dataset.plan : '2';
-    
-    showLoading('正在啟動提取任務...');
-    fetch('/api/build_database_plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan_id: planId })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) throw new Error(data.error);
-        alert(`✅ ${data.plan_name} 執行成功！已提取 ${data.extracted_count} 封郵件。`);
-        location.reload();
-    })
-    .catch(err => alert('提取失敗: ' + err.message))
-    .finally(hideLoading);
-}
-
-function exportData() {
-    window.location.href = '/api/export';
-}
-
-function setupAI() {
-    alert('AI 設定模組開發中...\n目前預設連接本機 Ollama 服務。');
-}
-
-function toggleCustomPlan() {
-    const section = document.getElementById('customPlanSection');
-    if (section) section.classList.toggle('hidden');
-}
-
-function buildCustomPlan() {
-    const count = document.getElementById('customEmailCount').value;
-    const limit = document.getElementById('customBodyLimit').value;
-    
-    showLoading('執行自訂提取方案...');
-    fetch('/api/build_database_custom', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email_count: parseInt(count), body_limit: parseInt(limit) })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) throw new Error(data.error);
-        alert(`✅ 自訂方案執行成功！已提取 ${data.extracted_count} 封郵件。`);
-        location.reload();
-    })
-    .catch(err => alert('執行失敗: ' + err.message))
-    .finally(hideLoading);
-}
-
 function runFullPipeline() {
-    if (!confirm('將啟動「一鍵自動化」流程：\n1. 提取 Outlook 郵件與附件\n2. AI 分析並建構知識圖譜\n\n這可能需要幾分鐘時間，確定繼續？')) return;
+    runPipelineWithStream();
+}
+
+function runImportantFoldersIngest() {
+    const count = prompt('請輸入每個資料夾同步的郵件數量：', '100');
+    if (!count) return;
+    showLoading('同步中...');
+    fetch('/api/important_folders_ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ max_per_folder: parseInt(count) })
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert('✅ 重要資料夾同步完成');
+        location.reload();
+    })
+    .catch(err => alert('同步失敗: ' + err.message))
+    .finally(hideLoading);
+}
+
+
+
+// Settings Logic
+function openSettings() {
+    fetch('/api/ai_config')
+        .then(r => r.json())
+        .then(config => {
+            document.getElementById('settingProvider').value = config.provider || 'ollama';
+            
+            // Populate Ollama URL
+            if (config.ollama && config.ollama.url) {
+                const urlEl = document.getElementById('settingOllamaUrl');
+                urlEl.value = config.ollama.url;
+            }
+            
+            // Fetch and populate Ollama Models
+            fetchOllamaModels(config.ollama ? config.ollama.model : '');
+            
+            if (config.google) {
+                document.getElementById('settingGeminiKey').value = config.google.api_key || '';
+                document.getElementById('settingGeminiModel').value = config.google.model || 'gemini-1.5-flash';
+            }
+            
+            toggleSettingFields();
+            document.getElementById('settingsModal').classList.remove('hidden');
+        });
+}
+
+
+function fetchOllamaModels(selectedModel) {
+    const modelEl = document.getElementById('settingOllamaModel');
+    modelEl.innerHTML = '<option value="">正在載入...</option>';
     
-    showLoading('一鍵同步與知識建構中，請勿關閉視窗...');
-    fetch('/api/full_pipeline', { method: 'POST' })
+    fetch('/api/ollama_models')
         .then(r => r.json())
         .then(data => {
-            if (data.error) {
-                alert('流程中斷: ' + data.error + '\n' + (data.details || ''));
+            if (data.models && data.models.length > 0) {
+                modelEl.innerHTML = data.models.map(m => 
+                    `<option value="${m.name}" ${m.name === selectedModel ? 'selected' : ''}>${m.name}</option>`
+                ).join('');
             } else {
-                alert('✅ 全流程執行成功！知識庫已更新。');
-                location.reload();
+                const errorMsg = data.error || '無可用模型 (請確認 Ollama 已啟動)';
+                modelEl.innerHTML = `<option value="">${errorMsg}</option>`;
             }
         })
-        .catch(err => alert('系統錯誤: ' + err))
-        .finally(hideLoading);
+        .catch(err => {
+            modelEl.innerHTML = `<option value="">連線錯誤: ${err.message}</option>`;
+        });
 }
 
-function fullIngest() {
-    if (!confirm('執行完整提取將會重置本地附件庫，確定繼續？')) return;
-    showLoading('全量同步中...');
-    fetch('/api/ingest', { method: 'POST' })
-        .then(r => r.json())
-        .then(() => location.reload())
-        .catch(err => alert(err))
-        .finally(hideLoading);
+
+function closeSettings() {
+    document.getElementById('settingsModal').classList.add('hidden');
 }
 
-function buildWiki() {
-    showLoading('正在建構知識圖譜...');
-    fetch('/api/build_wiki', { method: 'POST' })
-        .then(r => r.json())
-        .then(() => alert('Wiki 建構完成！'))
-        .finally(hideLoading);
+function toggleSettingFields() {
+    const provider = document.getElementById('settingProvider').value;
+    document.getElementById('ollamaFields').classList.toggle('hidden', provider !== 'ollama');
+    document.getElementById('geminiFields').classList.toggle('hidden', provider !== 'google');
 }
 
-async function clearAndRebuild() {
-    if (!confirm('⚠️ 警告：這將刪除所有已提取的資料。')) return;
-    showLoading('清理中...');
-    await fetch('/api/clear_database', { method: 'POST' });
-    location.reload();
+function saveSettings() {
+    const provider = document.getElementById('settingProvider').value;
+    const config = {
+        provider: provider,
+        ollama: {
+            url: document.getElementById('settingOllamaUrl').value,
+            model: document.getElementById('settingOllamaModel').value,
+            timeout: 120
+        },
+        google: {
+            api_key: document.getElementById('settingGeminiKey').value,
+            model: document.getElementById('settingGeminiModel').value
+        }
+    };
+    
+    showLoading('儲存設定中...');
+    fetch('/api/ai_config_update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) alert('儲存失敗: ' + data.error);
+        else {
+            alert('✅ 設定已套用');
+            closeSettings();
+            location.reload();
+        }
+    })
+    .finally(hideLoading);
+}
+
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
 }

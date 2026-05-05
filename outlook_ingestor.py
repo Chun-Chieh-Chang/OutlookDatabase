@@ -5,38 +5,33 @@ Extracts full email content, including attachments, to raw storage.
 """
 
 import win32com.client
+import pythoncom
 import sqlite3
 import datetime
 import os
 import json
 import re
-
 import sys
+import io
 
 # Fix Windows encoding
 if sys.platform == "win32":
-    import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Configuration
 DB_NAME = 'emails.db'
-FOLDER_NAME = '收件匣'
-ACCOUNT_NAME = 'mike.chen@mouldex.com.tw'  
-MAX_EMAILS = 5000  # Increased for full ingestion
+# DEFAULT_ACCOUNT will be detected dynamically
+MAX_EMAILS = 5000
 RAW_DIR = 'raw'
 EMAIL_DIR = os.path.join(RAW_DIR, 'emails')
 ATTACH_DIR = os.path.join(RAW_DIR, 'attachments')
 
 def clean_filename(filename):
-    """Clean filename for OS storage."""
     return re.sub(r'[\\/*?:"<>|]', '_', filename)
 
 def init_storage():
-    """Ensure raw storage directories exist."""
     os.makedirs(EMAIL_DIR, exist_ok=True)
     os.makedirs(ATTACH_DIR, exist_ok=True)
-    
-    # Init DB as well for indexing
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''
@@ -56,131 +51,102 @@ def init_storage():
     return conn
 
 def get_outlook_folder(namespace, account_name, folder_name):
-    """Get the specific Outlook folder."""
     try:
         root_folder = namespace.Folders.Item(account_name)
-        folder = root_folder.Folders.Item(folder_name)
-        return folder
-    except Exception as e:
-        print(f"Error accessing folder {folder_name}: {e}")
-        return None
+        return root_folder.Folders.Item(folder_name)
+    except:
+        # Fallback to default inbox if specific folder not found
+        return namespace.GetDefaultFolder(6)
 
-def ingest_emails(max_emails=None, body_limit=None):
-    """Extract and store everything from Outlook."""
-    global MAX_EMAILS
-    if max_emails is not None:
-        MAX_EMAILS = max_emails
-        
-    print(f"Starting SkillsBuilder Ingestor (Limit: {MAX_EMAILS})...")
+def ingest_emails(max_emails_per_folder=100):
+    print(f"Starting SkillsBuilder Ingestor (Limit: {max_emails_per_folder} per folder)...")
     
     try:
-        outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    except Exception as e:
-        print(f"❌ Failed to connect to Outlook: {e}")
-        return
-
-    inbox = get_outlook_folder(outlook, ACCOUNT_NAME, FOLDER_NAME)
-    if not inbox:
-        print(f"❌ Could not find inbox for {ACCOUNT_NAME}")
-        return
+        pythoncom.CoInitialize()
+        outlook_app = win32com.client.Dispatch("Outlook.Application")
+        namespace = outlook_app.GetNamespace("MAPI")
+        print("✅ Outlook COM initialized successfully")
         
-    messages = inbox.Items
-    messages.Sort("[ReceivedTime]", True)
-    
-    conn = init_storage()
-    c = conn.cursor()
-    
-    print(f"📊 Processing top {MAX_EMAILS} emails from {inbox.Name}...")
-    
-    count = 0
-    new_count = 0
-    
-    for msg in messages:
-        if count >= MAX_EMAILS:
-            break
-            
+        # Determine folders to process
+        folders_to_process = []
         try:
-            if msg.Class == 43:  # MailItem
-                entry_id = msg.EntryID
-                subject = msg.Subject
-                sender_name = msg.SenderName
-                sender_email = "Unknown"
-                try:
-                    sender_email = msg.SenderEmailAddress
-                except: pass
-                
-                received_time = str(msg.ReceivedTime)
-                body = msg.Body if msg.Body else ""
-                
-                if body_limit and len(body) > body_limit:
-                    body = body[:body_limit] + "..."
-                
-                # Check attachments
-                attachments = []
-                has_attachments = 0
-                if msg.Attachments.Count > 0:
-                    has_attachments = 1
-                    msg_attach_dir = os.path.join(ATTACH_DIR, clean_filename(entry_id))
-                    os.makedirs(msg_attach_dir, exist_ok=True)
-                    
-                    for i in range(1, msg.Attachments.Count + 1):
-                        attachment = msg.Attachments.Item(i)
-                        filename = clean_filename(attachment.FileName)
-                        save_path = os.path.join(msg_attach_dir, filename)
-                        attachment.SaveAsFile(os.path.abspath(save_path))
-                        attachments.append({
-                            'filename': filename,
-                            'path': save_path,
-                            'size': attachment.Size
-                        })
-                
-                # Metadata for JSON
-                email_data = {
-                    'entry_id': entry_id,
-                    'subject': subject,
-                    'sender_name': sender_name,
-                    'sender_email': sender_email,
-                    'received_time': received_time,
-                    'body': body,
-                    'folder': inbox.Name,
-                    'attachments': attachments,
-                    'ingested_at': datetime.datetime.now().isoformat()
-                }
-                
-                # Save to RAW JSON
-                json_filename = clean_filename(entry_id) + ".json"
-                json_path = os.path.join(EMAIL_DIR, json_filename)
-                with open(json_path, 'w', encoding='utf-8') as f:
-                    json.dump(email_data, f, indent=2, ensure_ascii=False)
-                
-                # Update DB Index
-                c.execute("SELECT 1 FROM emails WHERE entry_id = ?", (entry_id,))
-                if c.fetchone() is None:
-                    c.execute('''
-                        INSERT INTO emails (entry_id, subject, sender_name, sender_email, received_time, body, folder, has_attachments, raw_path)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', (entry_id, subject, sender_name, sender_email, received_time, body, inbox.Name, has_attachments, json_path))
-                    new_count += 1
-                else:
-                    # Update existing record
-                    c.execute('''
-                        UPDATE emails 
-                        SET subject=?, sender_name=?, sender_email=?, received_time=?, body=?, has_attachments=?, raw_path=?
-                        WHERE entry_id=?
-                    ''', (subject, sender_name, sender_email, received_time, body, has_attachments, json_path, entry_id))
-                
-                count += 1
-                if count % 10 == 0:
-                    print(f"✅ Ingested {count} emails...")
-                    conn.commit()
-                    
+            # Dynamically get the default store (account) root folder
+            default_store = namespace.DefaultStore
+            root = default_store.GetRootFolder()
+            
+            print(f"📍 Detected Account: {root.Name}")
+            
+            # Add Inbox and Sent
+            # Using Folder constants for language-agnostic detection
+            folders_to_process.append(namespace.GetDefaultFolder(6)) # Inbox
+            try: folders_to_process.append(namespace.GetDefaultFolder(5)) # Sent
+            except: pass
         except Exception as e:
-            print(f"⚠️ Error processing email: {e}")
-            continue
-
-    conn.commit()
-    conn.close()
-    print(f"✨ Ingest complete. Total: {count}, New: {new_count}")
+            print(f"⚠️ Dynamic detection fallback: {e}")
+            folders_to_process.append(namespace.GetDefaultFolder(6)) # Inbox
+            folders_to_process.append(namespace.GetDefaultFolder(5)) # Sent
+            
+        conn = init_storage()
+        cursor = conn.cursor()
+        
+        for folder in folders_to_process:
+            print(f"📁 Processing folder: {folder.Name}")
+            items = folder.Items
+            items.Sort("[ReceivedTime]", True)
+            
+            count = 0
+            for msg in items:
+                if count >= max_emails_per_folder: break
+                
+                try:
+                    if msg.Class == 43: # MailItem
+                        eid = msg.EntryID
+                        # Check if already in DB
+                        cursor.execute("SELECT 1 FROM emails WHERE entry_id = ?", (eid,))
+                        if cursor.fetchone(): 
+                            count += 1
+                            continue
+                            
+                        subj = msg.Subject or "No Subject"
+                        sender = msg.SenderName or "Unknown"
+                        body = msg.Body or ""
+                        time = str(msg.ReceivedTime)
+                        
+                        # Save raw JSON
+                        email_data = {
+                            "entry_id": eid,
+                            "subject": subj,
+                            "sender_name": sender,
+                            "body": body,
+                            "received_time": time
+                        }
+                        raw_path = os.path.join(EMAIL_DIR, f"{eid}.json")
+                        with open(raw_path, 'w', encoding='utf-8') as f:
+                            json.dump(email_data, f, ensure_ascii=False)
+                            
+                        # Save to DB
+                        cursor.execute("""
+                            INSERT INTO emails (entry_id, subject, sender_name, received_time, body, folder, raw_path)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (eid, subj, sender, time, body[:1000], folder.Name, raw_path))
+                        
+                        count += 1
+                        if count % 10 == 0: print(f"  Processed {count} items...")
+                except Exception as e:
+                    print(f"  Error processing item: {e}")
+                    continue
+                    
+        conn.commit()
+        conn.close()
+        print("✅ Ingestion complete")
+        
+    except Exception as e:
+        print(f"❌ Ingestion failed: {e}")
+    finally:
+        pythoncom.CoUninitialize()
 
 if __name__ == "__main__":
-    ingest_emails()
+    limit = 100
+    if len(sys.argv) > 2 and sys.argv[1] == "--limit":
+        limit = int(sys.argv[2])
+    ingest_emails(limit)

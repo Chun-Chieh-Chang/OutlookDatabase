@@ -8,7 +8,6 @@ import os
 import json
 import glob
 from email_analyzer import EmailAnalyzer
-
 import sys
 import io
 
@@ -45,6 +44,20 @@ def update_wiki_page(directory, name, type_label, description, source_email):
     
     return filename
 
+def get_processed_emails():
+    """Get set of already processed email entry IDs."""
+    processed_file = os.path.join(WIKI_DIR, '.processed_emails.txt')
+    if os.path.exists(processed_file):
+        with open(processed_file, 'r', encoding='utf-8') as f:
+            return set(line.strip() for line in f if line.strip())
+    return set()
+
+def mark_email_processed(entry_id):
+    """Mark an email as processed."""
+    processed_file = os.path.join(WIKI_DIR, '.processed_emails.txt')
+    with open(processed_file, 'a', encoding='utf-8') as f:
+        f.write(f"{entry_id}\n")
+
 def build_wiki():
     print("Starting Wiki Builder (Karpathy Ingest Workflow)...")
     ensure_dirs()
@@ -53,50 +66,56 @@ def build_wiki():
     if not analyzer.check_ollama_connection():
         print("AI service not available. Wiki building suspended.")
         return
-
+    
     email_files = glob.glob(os.path.join(RAW_DIR, "*.json"))
     print(f"Found {len(email_files)} raw emails.")
     
-    entities_map = {}
-    concepts_map = {}
+    # Get already processed emails
+    processed_emails = get_processed_emails()
+    print(f"Previously processed: {len(processed_emails)} emails")
+    
+    # Filter new emails only
+    new_emails = []
+    # Add a safety limit (can be passed via argv)
+    limit = int(sys.argv[1]) if len(sys.argv) > 1 else 100
     
     for email_file in email_files:
+        if len(new_emails) >= limit:
+            break
+            
         with open(email_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        # Simple skip logic: if already processed (could use a log file)
-        # For now, let's process all to build the initial wiki
-        
+        if data['entry_id'] not in processed_emails:
+            new_emails.append((email_file, data))
+    
+    print(f"Targeting {len(new_emails)} emails for this session (Limit: {limit}).")
+    
+    if not new_emails:
+        print("No new emails found. Wiki is up to date.")
+        return
+    
+    for email_file, data in new_emails:
         print(f"Analyzing: {data['subject']}")
-        analysis = analyzer.extract_wiki_entities(data['subject'], data['body'])
-        
-        source_ref = f"[{data['subject']}]({data['entry_id']})" # EntryID is unique
-        
-        for ent in analysis.get('entities', []):
-            fname = update_wiki_page(ENTITY_DIR, ent['name'], ent['type'], ent['description'], data['subject'])
-            entities_map[ent['name']] = fname
+        try:
+            analysis = analyzer.extract_wiki_entities(data['subject'], data['body'])
             
-        for con in analysis.get('concepts', []):
-            fname = update_wiki_page(CONCEPT_DIR, con['name'], "Concept", con['description'], data['subject'])
-            concepts_map[con['name']] = fname
-
-    # Update Index
-    print("Updating Wiki Index...")
-    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
-        f.write("# Project Brain: Outlook Database Tool\n\n")
-        f.write("## Entities\n")
-        for name, fname in sorted(entities_map.items()):
-            f.write(f"- [{name}](entities/{fname})\n")
+            source_ref = f"[{data['subject']}]({data['entry_id']})"
             
-        f.write("\n## Concepts\n")
-        for name, fname in sorted(concepts_map.items()):
-            f.write(f"- [{name}](concepts/{fname})\n")
+            # Process entities
+            for ent in analysis.get('entities', []):
+                update_wiki_page(ENTITY_DIR, ent['name'], ent['type'], ent['description'], source_ref)
             
-    # Update Log
-    with open(LOG_FILE, 'a', encoding='utf-8') as f:
-        f.write(f"\n- {os.path.basename(LOG_FILE)}: Wiki building completed at {os.environ.get('CURRENT_TIME', '2026-05-03')}\n")
-
-    print("Wiki Building Complete!")
+            # Process concepts
+            for conc in analysis.get('concepts', []):
+                update_wiki_page(CONCEPT_DIR, conc['name'], 'Concept', conc['description'], source_ref)
+            
+            mark_email_processed(data['entry_id'])
+        except Exception as e:
+            print(f"Error analyzing {data['subject']}: {e}")
+            continue
+            
+    print("Batch processing complete.")
 
 if __name__ == "__main__":
     build_wiki()
