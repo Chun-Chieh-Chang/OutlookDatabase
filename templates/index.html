@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook AI 知識庫 | SkillsBuilder Lite</title>
+    <title>Outlook AI 知識庫 | SkillsBuilder AI</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
     <!-- Fonts -->
@@ -26,19 +26,234 @@
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
     
     <style>
-        /* Emergency Contrast Fix for Modal */
-        #view-wiki .modal-header {
-            background-color: #0f172a !important; /* Slate 950 */
-            border-bottom: 1px solid #1e293b !important;
-            color: #ffffff !important;
-            min-height: 80px;
+        /* Premium Top Settings Panel - Vanilla CSS Edition */
+        #aiControlCenter {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            right: 0;
+            z-index: 10001;
+            justify-content: center;
+            display: flex;
         }
-        #view-wiki .modal-header h2 {
-            color: #ffffff !important;
+        
+        #aiControlCenter .modal-container {
+            width: 100%;
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            animation: slideDownFull 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDownFull {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .panel-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .panel-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-title p {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-panel {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-cancel {
+            background-color: #f1f5f9;
+            color: #64748b;
+        }
+        .btn-cancel:hover {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-save {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+        .btn-save:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .grid-config {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .config-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .config-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .config-input:focus {
+            border-color: #3b82f6;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .modal-overlay-bg {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 9998;
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div id="modalOverlayBg" class="modal-overlay-bg hidden" onclick="closeSettings()"></div>
+    
+    <!-- Settings Panel (Top Anchored) -->
+    <div id="aiControlCenter" class="hidden">
+        <div class="modal-container">
+            <div class="panel-content">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <h2><i class="fas fa-brain text-blue-500"></i> AI 核心配置</h2>
+                        <p>調整 SkillsBuilder 的雲端推理與本地運算參數</p>
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="closeSettings()" class="btn-panel btn-cancel">取消</button>
+                        <button onclick="saveSettings()" class="btn-panel btn-save">儲存並套用</button>
+                    </div>
+                </div>
+                
+                <div class="grid-config">
+                    <!-- Left Column -->
+                    <div class="config-section">
+                        <div class="config-group">
+                            <label class="config-label">AI 推理供應商</label>
+                            <select id="settingProvider" class="config-input" onchange="toggleSettingFields()">
+                                <option value="ollama">Local Ollama (本機)</option>
+                                <option value="google" selected>Google Gemini (雲端大腦)</option>
+                            </select>
+                        </div>
+                        <div id="ollamaFields" class="config-section" style="margin-top: 24px;">
+                            <div class="config-group">
+                                <label class="config-label">服務位址</label>
+                                <input type="text" id="settingOllamaUrl" class="config-input" value="http://localhost:11434">
+                            </div>
+                            <div class="config-group">
+                                <label class="config-label">本地模型</label>
+                                <select id="settingOllamaModel" class="config-input"><option value="">載入中...</option></select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="config-section" style="border-left: 1px solid #f1f5f9; padding-left: 60px;">
+                        <div id="geminiFields" class="config-section">
+                            <div class="config-group">
+                                <label class="config-label">Gemini API Key</label>
+                                <div style="position: relative;">
+                                    <input type="password" id="settingGeminiKey" class="config-input" placeholder="貼上 Key" style="padding-right: 48px;">
+                                    <i class="fas fa-eye" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer;" onclick="togglePassword('settingGeminiKey')"></i>
+                                </div>
+                                <p style="font-size: 11px; color: #3b82f6; margin-top: 8px; font-weight: 600;">
+                                    <i class="fas fa-external-link-alt" style="font-size: 9px;"></i> <a href="https://aistudio.google.com/app/apikey" target="_blank" style="text-decoration: none; color: inherit;">獲起您的 API Key</a>
+                                </p>
+                            </div>
+                            <div class="config-group">
+                                <label class="config-label">模型版本</label>
+                                <select id="settingGeminiModel" class="config-input">
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="container flex justify-between items-center h-full">
+            <div class="brand text-white font-bold flex items-center gap-2">
+                <i class="fas fa-brain text-blue-400"></i>
+                <span>SkillsBuilder AI</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <div id="aiStatus" class="text-xs font-medium text-slate-300 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    AI 初始化中...
+                </div>
+                <button onclick="openSettings()" class="text-slate-400 hover:text-white transition-colors" title="AI 核心設定">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <div class="app-container">
         <!-- Hero - 標題與統計 -->
         <header class="hero-section animate-fade-in">
@@ -47,11 +262,7 @@
             <p class="hero-subtitle">智能提取 Outlook 郵件，建構專屬專案知識庫</p>
             <div class="stats-strip">
                 <div class="stat-item"><i class="fas fa-database"></i> 郵件總數: <b id="totalEmails">-</b></div>
-                <div class="stat-item">
-                    <i class="fas fa-robot"></i> AI 狀態: <b id="aiStatus" onclick="reconnectAI()" style="cursor:pointer">檢查中...</b>
-                    <i class="fas fa-cog ml-2 hover:rotate-90 transition-all cursor-pointer text-blue-500" onclick="openSettings()" title="AI 設定"></i>
-                </div>
-                <div class="stat-item"><i class="fas fa-clock"></i> 最後更新: <b id="lastUpdate">剛剛</b></div>
+                <div class="stat-item"><i class="fas fa-clock"></i> 最後更新: <b id="lastUpdateTime">剛剛</b></div>
             </div>
         </header>
 
@@ -118,169 +329,4 @@
                                     <div class="text-2xl font-bold text-blue-500" id="dashEntityCount">-</div>
                                     <div class="text-[10px] text-slate-400 uppercase font-bold">識別實體</div>
                                 </div>
-                                <div class="text-center flex-1">
-                                    <div class="text-2xl font-bold text-indigo-500" id="dashConceptCount">-</div>
-                                    <div class="text-[10px] text-slate-400 uppercase font-bold">抽象概念</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dashboard-card bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-100 dark:border-emerald-900/30 p-6 rounded-3xl">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-lg">通訊關係分析</h4>
-                                    <p class="text-xs text-slate-500">活躍通訊節點統計</p>
-                                </div>
-                            </div>
-                            <div class="flex justify-between mt-6">
-                                <div class="text-center flex-1 border-r border-slate-200 dark:border-slate-700">
-                                    <div class="text-2xl font-bold text-emerald-500" id="dashSenderCount">-</div>
-                                    <div class="text-[10px] text-slate-400 uppercase font-bold">主要聯繫人</div>
-                                </div>
-                                <div class="text-center flex-1">
-                                    <div class="text-2xl font-bold text-teal-500" id="dashTotalMails">-</div>
-                                    <div class="text-[10px] text-slate-400 uppercase font-bold">郵件總庫</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="wikiAnswer" class="hidden animate-fade-in p-8 bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-xl prose dark:prose-invert max-w-none"></div>
-                <div id="searchResultsCard" class="card p-6 hidden">
-                    <h3 class="font-bold mb-4 flex items-center justify-between">
-                        <span class="flex items-center gap-2"><i class="fas fa-stream text-blue-500"></i> 相關郵件內容</span>
-                        <span id="searchCount" class="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full"></span>
-                    </h3>
-                    <div id="searchResults" class="space-y-4"></div>
-                    <div id="pagination" class="mt-8 flex items-center justify-center gap-4 hidden">
-                        <button id="prevPage" class="btn btn-secondary px-4 py-2" onclick="changePage(-1)">
-                            <i class="fas fa-chevron-left mr-2"></i> 上一頁
-                        </button>
-                        <span id="pageInfo" class="text-sm font-medium text-slate-500">第 1 / 1 頁</span>
-                        <button id="nextPage" class="btn btn-secondary px-4 py-2" onclick="changePage(1)">
-                            下一頁 <i class="fas fa-chevron-right ml-2"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Sidebar -->
-            <div class="space-y-6">
-                <div class="tool-group">
-                    <span class="group-title">📧 資料同步</span>
-                    <div class="tool-cards">
-                        <div class="tool-card primary" onclick="runImportantFoldersIngest()">
-                            <div class="tool-icon"><i class="fas fa-star text-yellow-500"></i></div>
-                            <div class="tool-content"><h4>同步重要資料夾</h4><p>快速獲取核心資訊</p></div>
-                        </div>
-                        <div class="tool-card" onclick="showView('wiki')">
-                            <div class="tool-icon"><i class="fas fa-brain text-purple-500"></i></div>
-                            <div class="tool-content"><h4>瀏覽知識圖譜</h4><p>查看 AI 分析結果</p></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 flex items-center gap-2"><i class="fas fa-history text-slate-400"></i> 最近提取</h3>
-                    <div id="recentEmails" class="space-y-2 text-sm"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Wiki Modal -->
-        <div id="view-wiki" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center hidden z-50 p-4 md:p-12">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-6xl h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700">
-                <!-- Modal Header: High Fidelity Fix -->
-                <div class="modal-header p-6 flex justify-between items-center" style="background-color: #0f172a !important; border-bottom: 1px solid #1e293b !important;">
-                    <h2 class="text-2xl font-bold flex items-center gap-3" style="color: #f1f5f9 !important;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h6v6H3z"/><path d="M15 3h6v6h-6z"/><path d="M15 15h6v6h-6z"/><path d="M3 15h6v6H3z"/><path d="M9 6h6"/><path d="M6 9v6"/><path d="M15 6v9"/><path d="M9 18h6"/></svg>
-                        AI 知識圖譜瀏覽器
-                    </h2>
-                    <button onclick="document.getElementById('view-wiki').classList.add('hidden')" class="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:bg-slate-800" style="background: transparent !important; border: none !important; cursor: pointer;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-                
-                <div class="flex-1 flex overflow-hidden">
-                    <div class="w-72 border-r border-slate-100 dark:border-slate-700 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-900/50" id="wikiIndex"></div>
-                    <div class="flex-1 overflow-y-auto p-10 bg-white dark:bg-slate-800" id="wikiContent"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Settings Modal -->
-        <div id="settingsModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center hidden z-[60] p-4">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                <div class="p-8 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                    <h2 class="text-2xl font-bold flex items-center gap-3">
-                        <i class="fas fa-tools text-blue-500"></i> AI 核心設定
-                    </h2>
-                    <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="p-8 space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-500 uppercase tracking-wider">AI 供應商</label>
-                        <select id="settingProvider" class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium" onchange="toggleSettingFields()">
-                            <option value="ollama">Local Ollama (本機運算)</option>
-                            <option value="google">Google Gemini (雲端大腦 - 推薦)</option>
-                        </select>
-                    </div>
-                    
-                    <div id="ollamaFields" class="space-y-4">
-                        <div class="space-y-2">
-                            <label class="text-sm font-bold text-slate-500 uppercase tracking-wider">Ollama 位址</label>
-                            <select id="settingOllamaUrl" class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                                <option value="http://localhost:11434">本地端 (localhost:11434)</option>
-                                <option value="http://127.0.0.1:11434">本地端 (127.0.0.1:11434)</option>
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-bold text-slate-500 uppercase tracking-wider">已安裝模型</label>
-                            <select id="settingOllamaModel" class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                                <option value="">載入中...</option>
-                            </select>
-                            <p class="text-[10px] text-slate-400 px-2">※ 僅列出您在本機透過 `ollama pull` 下載的模型</p>
-                        </div>
-                    </div>
-                    
-                    <div id="geminiFields" class="hidden space-y-4">
-                        <div class="space-y-2">
-                            <label class="text-sm font-bold text-slate-500 uppercase tracking-wider">Gemini API Key</label>
-                            <div class="relative">
-                                <input type="password" id="settingGeminiKey" class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none outline-none focus:ring-2 focus:ring-blue-500 pr-12" placeholder="貼上您的 API Key">
-                                <i class="fas fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer" onclick="togglePassword('settingGeminiKey')"></i>
-                            </div>
-                            <p class="text-[10px] text-blue-500 px-2"><i class="fas fa-info-circle mr-1"></i> <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline">前往獲取免費金鑰</a></p>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-bold text-slate-500 uppercase tracking-wider">模型版本</label>
-                            <select id="settingGeminiModel" class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (快速 & 免費)</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro (深度分析)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-8 bg-slate-50 dark:bg-slate-900/50 flex gap-4">
-                    <button class="btn btn-secondary flex-1 py-4" onclick="closeSettings()">取消</button>
-                    <button class="btn btn-primary flex-1 py-4 shadow-xl shadow-blue-500/20" onclick="saveSettings()">儲存並套用</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center hidden z-[100]">
-        <div class="bg-white dark:bg-slate-800 rounded-[3rem] p-12 text-center shadow-2xl max-w-lg w-full mx-4 border border-slate-100 dark:border-slate-700">
-            <div class="loading-spinner mx-auto mb-8"></div>
-            <p id="loadingMessage" class="text-2xl font-bold mb-2">正在處理中...</p>
-            <p class="text-slate-500 mb-6">系統正在建構您的專屬知識庫</p>
-            <div id="log-container" class="mt-4 text-[10px] font-mono text-blue-400/80 max-h-48 overflow-y-auto text-left bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-inner"></div>
-        </div>
-    </div>
-</body>
-</html>
+                     

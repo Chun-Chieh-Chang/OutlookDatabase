@@ -68,25 +68,59 @@
     box-sizing: border-box;
 }
 
+.hidden {
+    display: none !important;
+}
+
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    color: var(--text-primary);
     background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Outfit', sans-serif;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+/* Top Navigation */
+.top-nav {
+    background-color: #0F172A; /* Slate 900 */
+    height: 48px;
+    width: 100%;
+    position: fixed; /* Change from sticky to fixed for absolute dominance */
+    top: 0;
+    z-index: 9999;
+    border-bottom: 1px solid #1E293B;
 }
 
-/* Layout */
-.app-container {
-    max-width: 1100px;
+.top-nav button {
+    cursor: pointer !important;
+    z-index: 10000;
+}
+
+.top-nav .container {
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 4rem 1.5rem;
+    padding: 0 var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+
+.top-nav .brand {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+    font-size: 0.9rem;
+}
+
+#aiStatus span {
+    transition: all 0.3s ease;
+}
+
+/* App Layout */
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: calc(48px + var(--space-8)) var(--space-4) var(--space-8);
     min-height: 100vh;
 }
 
@@ -629,10 +663,117 @@ h1, h2, h3, h4, h5, h6 {
     .border-slate-100, .border-slate-200 { border-color: #334155 !important; }
     
     /* Force sidebar to be dark */
-    #wikiIndex { background-color: #0f172a !important; border-color: #1e293b !important; }
-    #wikiContent { background-color: #1e293b !important; color: #f1f5f9 !important; }
+    #wikiIndex { background-color: #0F172A !important; border-color: #1E293B !important; }
+    #wikiContent { background-color: #1E293B !important; color: #F1F5F9 !important; }
     
     /* Loading overlay dark mode */
-    #loadingOverlay .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
-    #loadingOverlay p { color: #f1f5f9 !important; }
+    #loadingOverlay .bg-white { background-color: #1E293B !important; border-color: #334155 !important; }
+    #loadingOverlay p { color: #F1F5F9 !important; }
+}
+
+/* AI Configuration Panel Styles */
+#aiControlCenter {
+    position: fixed;
+    top: 48px;
+    left: 0;
+    right: 0;
+    z-index: 10001;
+    display: flex;
+    justify-content: center;
+}
+
+#aiControlCenter .modal-container {
+    width: 100%;
+    background-color: var(--bg-surface) !important;
+    border-bottom: 2px solid var(--brand-accent);
+    box-shadow: var(--shadow-xl);
+    animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--space-10) var(--space-6);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8);
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: var(--space-6);
+}
+
+.panel-title h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.panel-title p {
+    margin: var(--space-2) 0 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.grid-config {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+}
+
+.config-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.config-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.config-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.config-input {
+    width: 100%;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-base);
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.2s;
+}
+
+.config-input:focus {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.modal-overlay-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    z-index: 9998;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }

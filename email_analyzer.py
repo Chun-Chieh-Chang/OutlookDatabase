@@ -11,6 +11,7 @@ import pandas as pd
 from datetime import datetime
 import re
 import os
+import time
 import sys
 
 # 修復 Windows 編碼問題
@@ -51,14 +52,45 @@ class EmailAnalyzer:
         """檢查 AI 連接 (相容舊介面)"""
         if self.provider == 'google':
             if not self.google_api_key or "YOUR_GEMINI" in self.google_api_key:
+                print("[AI] Gemini Key not set or still using placeholder")
                 return False
-            # 簡單測試 API Key 是否有效
-            try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.google_model}:generateContent?key={self.google_api_key}"
-                resp = requests.post(url, json={"contents": [{"parts":[{"text":"hi"}]}]}, timeout=5)
-                return resp.status_code == 200
-            except:
-                return False
+            
+            # 嘗試清單
+            candidate_models = [self.google_model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+            
+            for i, model in enumerate(candidate_models):
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.google_api_key}"
+                    resp = requests.post(url, json={"contents": [{"parts":[{"text":"hi"}]}]}, timeout=8)
+                    if resp.status_code == 200:
+                        print(f"[AI] Gemini Connected successfully using model: {model}")
+                        self.google_model = model
+                        return True
+                    elif i == 0:
+                        # 第一次失敗，嘗試列出所有可用模型
+                        print(f"[AI] Model {model} not found. Fetching available models...")
+                        list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={self.google_api_key}"
+                        list_resp = requests.get(list_url, timeout=8)
+                        if list_resp.status_code == 200:
+                            available = [m['name'].replace('models/', '') for m in list_resp.json().get('models', [])]
+                            print(f"[AI] Available models for this key: {available}")
+                            # 如果列表中有 Flash，嘗試用列表中的正確名稱
+                            for am in available:
+                                if "flash" in am.lower() or "pro" in am.lower():
+                                    print(f"[AI] Trying discovered model: {am}")
+                                    test_url = f"https://generativelanguage.googleapis.com/v1beta/models/{am}:generateContent?key={self.google_api_key}"
+                                    if requests.post(test_url, json={"contents": [{"parts":[{"text":"hi"}]}]}, timeout=8).status_code == 200:
+                                        self.google_model = am
+                                        return True
+                except Exception as e:
+                    if i == 0: print(f"[AI] Connection Error: {str(e)}")
+                    continue
+            
+            print("[AI] All Gemini attempts failed.")
+            return False
+            
+            print("[AI] All Gemini candidate models failed to connect.")
+            return False
         else:
             try:
                 response = requests.get(f"{self.ollama_url}/api/tags", timeout=5)
@@ -92,38 +124,53 @@ class EmailAnalyzer:
             return f"Ollama 連接錯誤: {str(e)}"
 
     def call_gemini(self, prompt, system_prompt=None):
-        """呼叫 Google Gemini API"""
+        """呼叫 Google Gemini API (具備自動重試機制，429加強退避)"""
         if not self.google_api_key or "YOUR_GEMINI" in self.google_api_key:
             return "錯誤: 請先在 ai_config.json 中設定 Gemini API Key"
         
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.google_model}:generateContent?key={self.google_api_key}"
-            
-            full_prompt = f"{system_prompt}\n\nUser Question: {prompt}" if system_prompt else prompt
-            
-            payload = {
-                "contents": [{
-                    "parts": [{"text": full_prompt}]
-                }],
-                "generationConfig": {
-                    "temperature": 0.1,
-                    "topK": 1,
-                    "topP": 1,
-                    "maxOutputTokens": 2048,
+        max_retries = 5
+        retry_delay = 10
+        
+        for attempt in range(max_retries):
+            try:
+                model_name = self.google_model
+                if not model_name.startswith('models/'):
+                    model_name = f"models/{model_name}"
+                
+                url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={self.google_api_key}"
+                
+                full_prompt = f"{system_prompt}\n\nUser Question: {prompt}" if system_prompt else prompt
+                
+                payload = {
+                    "contents": [{"parts": [{"text": full_prompt}]}],
+                    "generationConfig": {"temperature": 0.2, "topP": 0.8, "maxOutputTokens": 4096}
                 }
-            }
-            
-            response = requests.post(url, json=payload, timeout=120)
-            if response.status_code == 200:
-                result = response.json()
-                try:
-                    return result['candidates'][0]['content']['parts'][0]['text'].strip()
-                except (KeyError, IndexError):
-                    return "Gemini 回傳格式異常"
-            else:
-                return f"Gemini API 錯誤: {response.status_code} - {response.text}"
-        except Exception as e:
-            return f"Gemini 連接錯誤: {str(e)}"
+                
+                response = requests.post(url, json=payload, timeout=120)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    try:
+                        return result['candidates'][0]['content']['parts'][0]['text'].strip()
+                    except (KeyError, IndexError):
+                        return "Gemini 回傳格式異常"
+                elif response.status_code in [503, 429]:
+                    # 伺服器忙碌或達到限流，指數退避
+                    if attempt < max_retries - 1:
+                        wait = retry_delay * (attempt + 1)
+                        print(f"⚠️ Gemini 限流 (HTTP {response.status_code})，等待 {wait}s 後重試 ({attempt+1}/{max_retries-1})...")
+                        time.sleep(wait)
+                        continue
+                    return f"Gemini 伺服器目前過於繁忙，請稍後再試。 ({response.text})"
+                else:
+                    return f"Gemini API 錯誤: {response.status_code} - {response.text}"
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                return f"Gemini 連接錯誤: {str(e)}"
+        
+        return "Gemini 請求失敗"
     
     def summarize_email(self, subject, body, sender):
         """生成郵件摘要"""
@@ -252,43 +299,121 @@ class EmailAnalyzer:
             return "中性"
 
     def extract_wiki_entities(self, subject, body):
-        """為 Wiki 提取實體與概念 (Karpathy Pattern)"""
-        prompt = f"""
-分析以下郵件內容，提取關鍵的「實體 (Entities)」與「概念 (Concepts)」。
-實體包括：專案名稱、人物、公司、產品、技術。
-概念包括：開發流程、高層級目標、重要決策。
+        """為 Wiki 提取實體與概念 (v2: Decision Boundaries + Aliases + Relationships)"""
+        prompt = f"""你是一個資深工業知識圖譜架構師。請從以下郵件中萃取高價值實體，嚴格遵循分類規則。
 
-郵件主旨: {subject}
-內容摘要: {body[:1000]}
+═══ 分類判定規則 (Decision Boundaries) ═══
+按以下優先順序判定 category（遇到第一個符合的就停止）：
 
-請以 JSON 格式回應：
+1. org    → 公司/組織/法人名稱（如: ICU Medical, Mouldex, 凱益, SGS, DNV, 東林易）
+2. man    → 具體的自然人姓名（如: Abbie Tai, Wesley Chang, 張仁傑）。注意：公司名不是人名！
+3. project → 包含 Part Number (R1-xxxx, CIV0000xxx) 或明確的專案代號
+4. method  → SOP/流程/規範/標準/作業程序（如: IQ/OQ/PQ protocol, 進料檢驗流程, M08001）
+5. measure → 量測/校正/檢驗活動或標準（如: FAI測量, CMM檢測, ISO 13485）
+6. material → 具體物料/樹脂/零件/半成品（如: PVC resin, Filter Base, TEGO Housing）
+7. machine → 模具/設備/儀器/工具（如: 顯微鏡, CNC, 射出機, 8-cavity mold）
+8. env     → 廠區/地點/實驗室/產線環境（如: 龍潭廠, 新竹工業區, Cleanroom）
+9. artifact → 文件/圖面/報告/PO/報價單（如: FAI Report, GOM Report, PO#7450, 2D Drawing）
+10. domain  → 技術領域/專業知識域（如: 射出成型, 醫療器材法規, 供應商管理）
+11. event   → 具體事件/會議/里程碑（如: T1試模, 客訴調查, 供應商稽核）
+
+⚠️ 絕對禁止使用 "others" 作為 category！必須從以上 11 個選一個最接近的。
+
+═══ Lifecycle (PDCA) 判定規則 ═══
+- plan  → 設計/DFM/規劃/排程/報價/評估階段
+- do    → 開模/試模(T1-T5)/生產/執行/交貨階段
+- check → 檢驗/FAI/驗證(IQ/OQ/PQ)/審核/稽核階段
+- act   → 改善/變更/矯正/SCAR/ECR/設計變更階段
+
+═══ Improvement (CAPA) 判定規則 ═══
+- problem    → 郵件描述了一個異常/缺陷/客訴/不合格
+- rootcause  → 郵件分析了問題的原因
+- correction → 郵件提出了立即矯正措施
+- prevention → 郵件提出了預防再發措施或系統性改善
+
+═══ 郵件內容 ═══
+主旨: {subject}
+內容: {body[:3000]}
+
+═══ 回應格式 (嚴格 JSON) ═══
 {{
-  "entities": [
-    {{"name": "名稱", "type": "類型(Person/Project/Company/Tech)", "description": "簡短描述"}}
-  ],
-  "concepts": [
-    {{"name": "概念名稱", "description": "簡短描述"}}
+  "dimensions": [
+    {{
+      "name": "標準化實體名稱 (英文優先，如 Abbie Tai 而非 abbie)",
+      "aliases": ["別名1", "別名2"],
+      "category": "從上述11個類別選一個",
+      "lifecycle": "plan/do/check/act",
+      "improvement": "problem/rootcause/correction/prevention/none",
+      "urgency": "critical/high/normal/low",
+      "tags": ["標籤1", "標籤2"],
+      "domain": "所屬技術領域",
+      "description": "不得為空！至少一句話描述 Who/What/When/Where/Why",
+      "relationships": [
+        {{"target": "關聯實體名稱", "type": "belongs_to/works_on/collaborates_with/supplies_to/references/produces/validates"}}
+      ]
+    }}
   ]
 }}
+
+═══ 品質約束 ═══
+1. description 不得為空字串，至少包含一句 5W1H 描述
+2. category 禁止使用 "others"
+3. relationships 至少包含 1 個關係
+4. aliases 列出此實體的所有已知別名（中英文皆可）
+5. lifecycle 必須判定，不要輕易填 "none"
+6. 只提取有工業管理價值的實體，忽略郵件簽名檔中的電話/地址等雜訊
 """
-        system_prompt = "你是一個資深架構師，擅長從混亂的訊息中提取結構化知識。只回應 JSON 內容。"
+        system_prompt = "你是資深工業知識圖譜架構師。只回應合法 JSON，不要加任何解釋文字或 markdown 格式。"
         
         result = self.call_ollama(prompt, system_prompt)
         
-        # 嘗試解析 JSON
         try:
+            # 清理可能的 markdown code fence
+            cleaned = result.strip()
+            if cleaned.startswith('```'):
+                cleaned = re.sub(r'^```(?:json)?\s*', '', cleaned)
+                cleaned = re.sub(r'\s*```$', '', cleaned)
+            
             # 尋找 JSON 區塊
-            match = re.search(r'\{.*\}', result, re.DOTALL)
+            match = re.search(r'\{.*\}', cleaned, re.DOTALL)
             if match:
                 parsed = json.loads(match.group(0))
-                return parsed
-            else:
-                # If no JSON braces, try to see if it's plain text that looks like JSON
-                if result.strip().startswith('{'):
-                    return json.loads(result.strip())
-            return {"entities": [], "concepts": []}
+                if "dimensions" not in parsed:
+                    return {"dimensions": []}
+                
+                # 欄位級品質防禦
+                validated = []
+                for dim in parsed["dimensions"]:
+                    # 跳過無名稱的實體
+                    if not dim.get("name", "").strip():
+                        continue
+                    # 強制修正 "others" → "event" (fallback)
+                    if dim.get("category", "others").lower() == "others":
+                        dim["category"] = "event"
+                    # 空 description 防禦
+                    if not dim.get("description", "").strip():
+                        dim["description"] = f"(Auto) Entity extracted from: {subject}"
+                    # 確保 aliases 是 list
+                    if not isinstance(dim.get("aliases"), list):
+                        dim["aliases"] = []
+                    # 確保 relationships 是 list
+                    if not isinstance(dim.get("relationships"), list):
+                        dim["relationships"] = []
+                    # 確保 tags 是 list
+                    if not isinstance(dim.get("tags"), list):
+                        dim["tags"] = []
+                    # 預設值填充
+                    dim.setdefault("urgency", "normal")
+                    dim.setdefault("domain", "")
+                    dim.setdefault("lifecycle", "do")
+                    dim.setdefault("improvement", "none")
+                    validated.append(dim)
+                
+                return {"dimensions": validated}
+            return {"dimensions": []}
         except Exception as e:
-            return {"entities": [], "concepts": []}
+            print(f"[AI] Knowledge Extraction Error: {e}")
+            return {"dimensions": []}
     
     def analyze_email_batch(self, email_ids):
         """批次分析郵件"""
@@ -390,41 +515,63 @@ class EmailAnalyzer:
         entity_dir = 'wiki/entities'
         concept_dir = 'wiki/concepts'
         
-        # 尋找關鍵詞匹配的 Wiki 頁面
+        # 尋找關鍵詞匹配的 Wiki 頁面 (優化中文匹配邏輯)
         matched_pages = []
+        clean_query = query.lower()
+        
+        def check_match(file_name, query_text):
+            entity_name = file_name.replace('.md', '').lower()
+            if not entity_name: return False
+            # 邏輯 A: 實體名稱在提問中 (例如: 提問包含 "東林易")
+            if entity_name in query_text: return True
+            # 邏輯 B: 提問中的某個詞在實體名稱中
+            if any(word.lower() in entity_name for word in query_text.split() if len(word) > 1): return True
+            return False
+
         if os.path.exists(entity_dir):
             for file in os.listdir(entity_dir):
-                if file.endswith('.md'):
-                    # 檢查文件名或內容是否匹配 query
-                    if any(word.lower() in file.lower() for word in query.split()):
+                if file.endswith('.md') and file != ".md":
+                    if check_match(file, clean_query):
                         with open(os.path.join(entity_dir, file), 'r', encoding='utf-8') as f:
                             matched_pages.append(f"Entity [{file}]:\n{f.read()}")
                             
         if os.path.exists(concept_dir):
             for file in os.listdir(concept_dir):
-                if file.endswith('.md'):
-                    if any(word.lower() in file.lower() for word in query.split()):
+                if file.endswith('.md') and file != ".md":
+                    if check_match(file, clean_query):
                         with open(os.path.join(concept_dir, file), 'r', encoding='utf-8') as f:
                             matched_pages.append(f"Concept [{file}]:\n{f.read()}")
 
-        wiki_context = "\n---\n".join(matched_pages[:5])
+        # 如果匹配到的頁面太多，優先取內容最相關的
+        wiki_context = "\n---\n".join(matched_pages[:10])
 
-        # 2. 檢索原始郵件 (SQLite Vector-like Search)
+        # 2. 檢索原始郵件 (使用 AI 提取關鍵詞進行多重搜尋)
         conn = sqlite3.connect('emails.db')
-        # 擴大檢索範圍，尋找主旨或內容中的多個關鍵詞
-        search_terms = [f"%{word}%" for word in query.split() if len(word) > 1]
-        if not search_terms: search_terms = [f"%{query}%"]
         
-        where_clause = " OR ".join(["subject LIKE ? OR body LIKE ?" for _ in search_terms])
+        # 嘗試從提問中提取核心關鍵詞 (例如: 東林易, 品質異常, 2025)
+        keywords = self.extract_keywords(query, "")
+        if not keywords:
+            search_terms = [f"%{query}%"]
+        else:
+            search_terms = [f"%{kw}%" for kw in keywords if len(kw) > 1]
+            # 保留原始提問作為其中一個搜尋項
+            search_terms.append(f"%{query}%")
+        
+        # 建立動態 SQL
+        where_conditions = []
         params = []
-        for term in search_terms: params.extend([term, term])
+        for term in search_terms:
+            where_conditions.append("(subject LIKE ? OR body LIKE ?)")
+            params.extend([term, term])
+        
+        where_clause = " OR ".join(where_conditions)
         
         query_sql = f"""
             SELECT subject, body, sender_name, received_time
             FROM emails
             WHERE {where_clause}
             ORDER BY received_time DESC
-            LIMIT 8
+            LIMIT 12
         """
         db_results = pd.read_sql_query(query_sql, conn, params=params)
         conn.close()

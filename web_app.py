@@ -86,31 +86,64 @@ def search_emails():
     limit = data.get('limit', 20)
     offset = (page - 1) * limit
     
-    if not query: return jsonify({'error': 'Query required'}), 400
+    # Smart Search: Detect if the query ends with a 4-digit year (Legacy support)
+    # or use the explicit year parameter (New standard)
+    year_filter = data.get('year')
+    clean_query = query
+    
+    if not year_filter:
+        words = query.split()
+        if len(words) > 1 and words[-1].isdigit() and len(words[-1]) == 4:
+            year_filter = words[-1]
+            clean_query = " ".join(words[:-1])
     
     conn = get_connection()
-    # Get total count first
-    count_sql = "SELECT COUNT(*) FROM emails WHERE subject LIKE ? OR body LIKE ?"
     cursor = conn.cursor()
-    cursor.execute(count_sql, (f'%{query}%', f'%{query}%'))
+    
+    # Base SQL
+    where_clause = "(subject LIKE ? OR body LIKE ?)"
+    params = [f'%{clean_query}%', f'%{clean_query}%']
+    
+    if year_filter:
+        where_clause += " AND substr(received_time, 1, 4) = ?"
+        params.append(year_filter)
+        
+    # Get total count
+    count_sql = f"SELECT COUNT(*) FROM emails WHERE {where_clause}"
+    cursor.execute(count_sql, params)
     total_count = cursor.fetchone()[0]
     
     # Get paginated results
-    sql = "SELECT subject, sender_name, received_time, body FROM emails WHERE subject LIKE ? OR body LIKE ? ORDER BY received_time DESC LIMIT ? OFFSET ?"
-    df = pd.read_sql_query(sql, conn, params=(f'%{query}%', f'%{query}%', limit, offset))
+    sql = f"SELECT subject, sender_name, received_time, body FROM emails WHERE {where_clause} ORDER BY received_time DESC LIMIT ? OFFSET ?"
+    df = pd.read_sql_query(sql, conn, params=params + [limit, offset])
+    
+    # Get year distribution (always based on clean query to show potential years)
+    year_sql = "SELECT substr(received_time, 1, 4) as year, COUNT(*) FROM emails WHERE (subject LIKE ? OR body LIKE ?) GROUP BY year ORDER BY year DESC"
+    cursor.execute(year_sql, [f'%{clean_query}%', f'%{clean_query}%'])
+    year_dist = dict(cursor.fetchall())
+    
     conn.close()
     
     return jsonify({
         'results': df.to_dict('records'), 
         'count': len(df),
         'total_count': total_count,
+        'year_distribution': year_dist,
         'page': page,
-        'total_pages': (total_count + limit - 1) // limit
+        'total_pages': max(1, (total_count + limit - 1) // limit)
     })
 
 @app.route('/api/ask_wiki', methods=['POST'])
 def ask_wiki():
-    if not ai_available: return jsonify({'error': 'AI Offline'}), 503
+    global ai_available, ai_analyzer
+    
+    # 如果狀態顯示不可用，嘗試在提問前最後一次重新偵測
+    if not ai_available or ai_analyzer is None:
+        init_ai()
+        
+    if not ai_available or ai_analyzer is None:
+        return jsonify({'error': 'AI 服務目前不可用，請檢查 Ollama 或 Google API 設定'}), 503
+        
     data = request.get_json()
     query = data.get('query')
     try:

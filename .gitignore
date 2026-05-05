@@ -1,7 +1,8 @@
 # Data and Privacy
 emails.db
 raw/
-wiki/
+wiki_v1_backup/
+sync.ffs_db
 __pycache__/
 *.exe
 *.csv

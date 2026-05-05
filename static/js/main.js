@@ -14,9 +14,47 @@ document.addEventListener('DOMContentLoaded', () => {
 // Global State
 let searchState = {
     keyword: '',
+    year: null,
     page: 1,
     totalPages: 1
 };
+
+function setSearchValue(val) {
+    const input = document.getElementById('searchKeyword');
+    if (input) {
+        input.value = val;
+        searchState.year = null; // Clear year filter when manually typing or clicking new keyword
+        searchEmails(1);
+    }
+}
+
+function setYearFilter(year) {
+    searchState.year = year;
+    searchEmails(1);
+}
+
+function togglePassword(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.type = el.type === 'password' ? 'text' : 'password';
+    }
+}
+
+function clearSearch() {
+    const input = document.getElementById('searchKeyword');
+    const results = document.getElementById('searchResultsCard');
+    const dashboard = document.getElementById('dashboardInitial');
+    const wiki = document.getElementById('wikiAnswer');
+    
+    if (input) input.value = '';
+    if (results) results.classList.add('hidden');
+    if (dashboard) dashboard.classList.remove('hidden');
+    if (wiki) wiki.classList.add('hidden');
+    
+    // Reset state
+    searchState.keyword = '';
+    searchState.page = 1;
+}
 
 // UI Logic
 function showLoading(msg = '處理中...') {
@@ -109,6 +147,7 @@ function searchEmails(page = 1) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             keyword: searchState.keyword,
+            year: searchState.year,
             page: searchState.page,
             limit: 20
         })
@@ -121,12 +160,28 @@ function searchEmails(page = 1) {
         const wikiAnswer = document.getElementById('wikiAnswer');
         const pagination = document.getElementById('pagination');
         
-        dashboard.classList.add('hidden');
-        wikiAnswer.classList.add('hidden');
-        card.classList.remove('hidden');
+        if (dashboard) dashboard.classList.add('hidden');
+        if (wikiAnswer) wikiAnswer.classList.add('hidden');
+        if (card) card.classList.remove('hidden');
         
         const countEl = document.getElementById('searchCount');
         if (countEl) countEl.textContent = `共找到 ${data.total_count} 筆結果`;
+
+        // Render Year Distribution Chips
+        const suggestionBox = document.querySelector('.search-suggestions');
+        if (suggestionBox && data.year_distribution) {
+            let yearHtml = '<span style="color: #64748b; font-size: 11px; margin-right: 10px;">年份分佈:</span>';
+            // Add a "Clear" chip if a year is selected
+            if (searchState.year) {
+                yearHtml += `<span class="suggestion-chip" style="background: #ef4444; color: white;" onclick="setYearFilter(null)">清除過濾 (${searchState.year})</span>`;
+            }
+            for (const [year, count] of Object.entries(data.year_distribution)) {
+                const isActive = searchState.year === year;
+                const activeStyle = isActive ? 'background: #3b82f6; color: white;' : '';
+                yearHtml += `<span class="suggestion-chip" style="${activeStyle}" onclick="setYearFilter('${year}')">${year} (${count})</span>`;
+            }
+            suggestionBox.innerHTML = yearHtml;
+        }
         
         searchState.totalPages = data.total_pages;
         
@@ -143,7 +198,7 @@ function searchEmails(page = 1) {
             `).join('');
             
             // Update Pagination UI
-            if (searchState.totalPages > 1) {
+            if (pagination && searchState.totalPages > 1) {
                 pagination.classList.remove('hidden');
                 document.getElementById('pageInfo').textContent = `第 ${data.page} / ${data.total_pages} 頁`;
                 document.getElementById('prevPage').disabled = data.page <= 1;
@@ -152,17 +207,17 @@ function searchEmails(page = 1) {
                 // Add visual feedback for disabled buttons
                 document.getElementById('prevPage').style.opacity = data.page <= 1 ? '0.5' : '1';
                 document.getElementById('nextPage').style.opacity = data.page >= data.total_pages ? '0.5' : '1';
-            } else {
+            } else if (pagination) {
                 pagination.classList.add('hidden');
             }
             
             // Scroll to top of results if on a new page
-            if (page > 1) {
+            if (page > 1 && card) {
                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else {
             container.innerHTML = '<div class="p-8 text-center text-slate-400">未找到相關郵件</div>';
-            pagination.classList.add('hidden');
+            if (pagination) pagination.classList.add('hidden');
         }
     })
     .finally(hideInlineLoading);
@@ -292,31 +347,42 @@ function checkAIStatus() {
         .then(data => {
             const statusEl = document.getElementById('aiStatus');
             if (statusEl) {
+                const dot = statusEl.querySelector('span');
                 if (data.available) {
-                    statusEl.textContent = `AI 在線 (${data.model})`;
-                    statusEl.className = 'text-emerald-500';
+                    statusEl.childNodes[statusEl.childNodes.length - 1].textContent = ` AI 在線 (${data.model})`;
+                    if (dot) {
+                        dot.className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                    }
                 } else {
-                    statusEl.textContent = 'AI 離線 (點擊重連)';
-                    statusEl.className = 'text-rose-500 hover:underline';
+                    statusEl.childNodes[statusEl.childNodes.length - 1].textContent = ' AI 離線 (點擊重連)';
+                    if (dot) {
+                        dot.className = 'w-2 h-2 rounded-full bg-rose-500 animate-pulse';
+                    }
                 }
             }
         });
 }
 
+
 function reconnectAI() {
-    const statusEl = document.getElementById('aiStatus');
-    if (statusEl) statusEl.textContent = '嘗試重連中...';
+    showLoading('正在重新連線 AI 服務...');
     fetch('/api/ai_reconnect', { method: 'POST' })
         .then(r => r.json())
         .then(data => {
             if (data.available) {
-                alert('✅ AI 服務重連成功: ' + data.model);
+                alert('✅ AI 已重新連線: ' + data.model);
+                checkAIStatus();
             } else {
-                alert('❌ 重連失敗，請檢查 Ollama 是否運行');
+                const msg = data.provider === 'google' 
+                    ? '❌ 重連失敗，請檢查 Gemini API Key 是否有效' 
+                    : '❌ 重連失敗，請檢查 Ollama 是否運行';
+                alert(msg);
             }
-            checkAIStatus();
-        });
+        })
+        .catch(err => alert('❌ 連線異常: ' + err.message))
+        .finally(hideLoading);
 }
+
 
 async function runPipelineWithStream() {
     const overlay = document.getElementById('loadingOverlay');
@@ -398,29 +464,34 @@ function runImportantFoldersIngest() {
 
 // Settings Logic
 function openSettings() {
+    console.log("⚙️ Launching AI Control Center");
+    const modal = document.getElementById('aiControlCenter');
+    const bg = document.getElementById('modalOverlayBg');
+    
+    if (modal) {
+        modal.classList.remove('hidden');
+        if (bg) bg.classList.remove('hidden');
+    }
+
     fetch('/api/ai_config')
         .then(r => r.json())
         .then(config => {
             document.getElementById('settingProvider').value = config.provider || 'ollama';
-            
-            // Populate Ollama URL
-            if (config.ollama && config.ollama.url) {
-                const urlEl = document.getElementById('settingOllamaUrl');
-                urlEl.value = config.ollama.url;
-            }
-            
-            // Fetch and populate Ollama Models
-            fetchOllamaModels(config.ollama ? config.ollama.model : '');
-            
             if (config.google) {
                 document.getElementById('settingGeminiKey').value = config.google.api_key || '';
-                document.getElementById('settingGeminiModel').value = config.google.model || 'gemini-1.5-flash';
+                document.getElementById('settingGeminiModel').value = config.google.model || 'gemini-1.5-pro';
             }
-            
             toggleSettingFields();
-            document.getElementById('settingsModal').classList.remove('hidden');
         });
 }
+
+function closeSettings() {
+    const modal = document.getElementById('aiControlCenter');
+    const bg = document.getElementById('modalOverlayBg');
+    if (modal) modal.classList.add('hidden');
+    if (bg) bg.classList.add('hidden');
+}
+window.openAISettings = openSettings;
 
 
 function fetchOllamaModels(selectedModel) {
@@ -442,11 +513,6 @@ function fetchOllamaModels(selectedModel) {
         .catch(err => {
             modelEl.innerHTML = `<option value="">連線錯誤: ${err.message}</option>`;
         });
-}
-
-
-function closeSettings() {
-    document.getElementById('settingsModal').classList.add('hidden');
 }
 
 function toggleSettingFields() {
@@ -488,7 +554,4 @@ function saveSettings() {
     .finally(hideLoading);
 }
 
-function togglePassword(id) {
-    const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
+// Footer helper or other utils can go here
