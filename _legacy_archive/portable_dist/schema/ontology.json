@@ -1,0 +1,29 @@
+{
+  "version": "2.0",
+  "name": "SkillsBuilder Industrial Ontology",
+  "categories": {
+    "project": "專案/產品代號 (R1-xxxx, CIV...)",
+    "org": "公司/組織/供應商名稱",
+    "man": "自然人姓名 (4M1E: Man)",
+    "machine": "設備/模具/儀器 (4M1E: Machine)",
+    "material": "原料/樹脂/零件 (4M1E: Material)",
+    "method": "SOP/標準/規範 (4M1E: Method)",
+    "env": "廠區/產線/環境 (4M1E: Environment)",
+    "measure": "量測/檢驗活動 (4M1E: Measurement)",
+    "artifact": "文件/報告/圖面",
+    "domain": "技術領域/專業知識",
+    "event": "會議/里程碑/特定事件"
+  },
+  "lifecycle": ["plan", "do", "check", "act"],
+  "improvement": ["none", "problem", "rootcause", "correction", "prevention"],
+  "urgency": ["critical", "high", "normal", "low"],
+  "relationships": [
+    "belongs_to",
+    "works_on",
+    "collaborates_with",
+    "supplies_to",
+    "references",
+    "produces",
+    "validates"
+  ]
+}

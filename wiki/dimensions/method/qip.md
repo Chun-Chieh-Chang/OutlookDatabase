@@ -1,4 +1,4 @@
----
+﻿---
 title: "QIP"
 aliases: ["Quality Inspection Plan", "QIP尺寸"]
 type: method

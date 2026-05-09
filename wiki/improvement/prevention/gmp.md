@@ -1,4 +1,4 @@
----
+﻿---
 title: "GMP"
 aliases: ["良好生產規範", "Good Manufacturing Practice"]
 type: method

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Wo Ya Technology"
 aliases: ["沃亞科技股份有限公司"]
 type: org

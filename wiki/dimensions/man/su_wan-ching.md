@@ -1,4 +1,4 @@
----
+﻿---
 title: "Su Wan-ching"
 aliases: ["蘇琬晴", "Mandy"]
 type: man

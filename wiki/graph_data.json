@@ -1,0 +1,2978 @@
+{
+  "nodes": [
+    {
+      "id": "CAPA_東林易_Unknown_0",
+      "name": "CAPA_東林易_Unknown_0",
+      "val": 10,
+      "color": "#EF4444",
+      "type": "capa",
+      "exists": true
+    },
+    {
+      "id": "CAPA_東林易_Unknown_1",
+      "name": "CAPA_東林易_Unknown_1",
+      "val": 10,
+      "color": "#EF4444",
+      "type": "capa",
+      "exists": true
+    },
+    {
+      "id": "CAPA_東林易_Unknown_2",
+      "name": "CAPA_東林易_Unknown_2",
+      "val": 10,
+      "color": "#EF4444",
+      "type": "capa",
+      "exists": true
+    },
+    {
+      "id": "CAPA_東林易_Unknown_3",
+      "name": "CAPA_東林易_Unknown_3",
+      "val": 10,
+      "color": "#EF4444",
+      "type": "capa",
+      "exists": true
+    },
+    {
+      "id": "CAPA_東林易_Unknown_4",
+      "name": "CAPA_東林易_Unknown_4",
+      "val": 10,
+      "color": "#EF4444",
+      "type": "capa",
+      "exists": true
+    },
+    {
+      "id": "cleanroom",
+      "name": "Cleanroom",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "env",
+      "exists": true
+    },
+    {
+      "id": "hsinchu_industrial_park",
+      "name": "Hsinchu Industrial Park",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "env",
+      "exists": true
+    },
+    {
+      "id": "新竹縣湖口鄉",
+      "name": "新竹縣湖口鄉",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "env",
+      "exists": true
+    },
+    {
+      "id": "104人力銀行",
+      "name": "104人力銀行",
+      "val": 10,
+      "color": "#F472B6",
+      "type": "hr",
+      "exists": true
+    },
+    {
+      "id": "abbie_tai",
+      "name": "Abbie Tai",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "man",
+      "exists": true
+    },
+    {
+      "id": "iris_tai",
+      "name": "Iris Tai",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "man",
+      "exists": true
+    },
+    {
+      "id": "su_wan-ching",
+      "name": "Su Wan-ching",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "man",
+      "exists": true
+    },
+    {
+      "id": "wesley_chang",
+      "name": "Wesley Chang",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "man",
+      "exists": true
+    },
+    {
+      "id": "蔡丞甯",
+      "name": "蔡丞甯",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "man",
+      "exists": true
+    },
+    {
+      "id": "陳玫婷",
+      "name": "陳玫婷",
+      "val": 10,
+      "color": "#94A3B8",
+      "type": "man",
+      "exists": true
+    },
+    {
+      "id": "cleanroom_inspection",
+      "name": "Cleanroom Inspection",
+      "val": 10,
+      "color": "#6366F1",
+      "type": "msa",
+      "exists": true
+    },
+    {
+      "id": "fai",
+      "name": "FAI",
+      "val": 10,
+      "color": "#6366F1",
+      "type": "msa",
+      "exists": true
+    },
+    {
+      "id": "平坦度量測",
+      "name": "平坦度量測",
+      "val": 10,
+      "color": "#6366F1",
+      "type": "msa",
+      "exists": true
+    },
+    {
+      "id": "deviation_investigation",
+      "name": "Deviation Investigation",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_0",
+      "name": "NCA_東林易_Unknown_0",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_1",
+      "name": "NCA_東林易_Unknown_1",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_2",
+      "name": "NCA_東林易_Unknown_2",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_3",
+      "name": "NCA_東林易_Unknown_3",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_4",
+      "name": "NCA_東林易_Unknown_4",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_5",
+      "name": "NCA_東林易_Unknown_5",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_6",
+      "name": "NCA_東林易_Unknown_6",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_7",
+      "name": "NCA_東林易_Unknown_7",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_8",
+      "name": "NCA_東林易_Unknown_8",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "NCA_東林易_Unknown_9",
+      "name": "NCA_東林易_Unknown_9",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "面談",
+      "name": "面談",
+      "val": 10,
+      "color": "#F59E0B",
+      "type": "nca",
+      "exists": true
+    },
+    {
+      "id": "abbie_tai",
+      "name": "Abbie Tai",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "aoi機台",
+      "name": "AOI機台",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "capa",
+      "name": "CAPA",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "cleanroom",
+      "name": "Cleanroom",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "cleanroom_inspection",
+      "name": "Cleanroom Inspection",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "cmm",
+      "name": "CMM",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "deviation_investigation",
+      "name": "Deviation Investigation",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "fai",
+      "name": "FAI",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "gmp",
+      "name": "GMP",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "hsinchu_industrial_park",
+      "name": "Hsinchu Industrial Park",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "ipqc",
+      "name": "IPQC",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "iris_tai",
+      "name": "Iris Tai",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "iso_9001",
+      "name": "ISO 9001",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "mouldex",
+      "name": "Mouldex",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "qip",
+      "name": "QIP",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "root_cause_analysis",
+      "name": "Root Cause Analysis",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "su_wan-ching",
+      "name": "Su Wan-ching",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "wesley_chang",
+      "name": "Wesley Chang",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "wo_ya_technology",
+      "name": "Wo Ya Technology",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "估算表",
+      "name": "估算表",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "品管工程師",
+      "name": "品管工程師",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "品管檢驗員",
+      "name": "品管檢驗員",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "平坦度量測",
+      "name": "平坦度量測",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "新竹縣湖口鄉",
+      "name": "新竹縣湖口鄉",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "歐帕生技醫藥股份有限公司",
+      "name": "歐帕生技醫藥股份有限公司",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "華矽創新股份有限公司",
+      "name": "華矽創新股份有限公司",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "蔡丞甯",
+      "name": "蔡丞甯",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "量測成本",
+      "name": "量測成本",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "陳玫婷",
+      "name": "陳玫婷",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "面談",
+      "name": "面談",
+      "val": 10,
+      "color": "#059669",
+      "type": "pqc",
+      "exists": true
+    },
+    {
+      "id": "abbie_tai",
+      "name": "Abbie Tai",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "April_2026_Crisis_Investigation",
+      "name": "2026年4月品質事故專案溯源報告",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "capa",
+      "name": "CAPA",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "Collaboration_Insights_QC3_Refactoring",
+      "name": "Collaboration Insight: QC 3.0 架構轉型決策",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "Compliance_Standard_v3",
+      "name": "📚 品管知識庫 3.0 合規基準標準 (Compliance Standard)",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "deviation_investigation",
+      "name": "Deviation Investigation",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "Global_Quality_Heatmap",
+      "name": "全局品質熱力圖 (QC 3.0)",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "gmp",
+      "name": "GMP",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "ipqc",
+      "name": "IPQC",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "iso_9001",
+      "name": "ISO 9001",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "mouldex",
+      "name": "Mouldex",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "qip",
+      "name": "QIP",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "R1-15853_April_Crisis_Report",
+      "name": "R1-15853 品質連鎖分析報告",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "root_cause_analysis",
+      "name": "Root Cause Analysis",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "wesley_chang",
+      "name": "Wesley Chang",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "wo_ya_technology",
+      "name": "Wo Ya Technology",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "估算表",
+      "name": "估算表",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "品管工程師",
+      "name": "品管工程師",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "品管檢驗員",
+      "name": "品管檢驗員",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "東林易_Quality_Diagnostic",
+      "name": "東林易 專案品質診斷報告",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "歐帕生技醫藥股份有限公司",
+      "name": "歐帕生技醫藥股份有限公司",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "華矽創新股份有限公司",
+      "name": "華矽創新股份有限公司",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "量測成本",
+      "name": "量測成本",
+      "val": 10,
+      "color": "#8B5CF6",
+      "type": "qms",
+      "exists": true
+    },
+    {
+      "id": "R1-1000",
+      "name": "R1-1000",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10000",
+      "name": "R1-10000",
+      "val": 10,
+      "color": "#3B82F6",
+      "type": "project",
+      "exists": true
+    },
+    {
+      "id": "R1-10002",
+      "name": "R1-10002",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10003",
+      "name": "R1-10003",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10004",
+      "name": "R1-10004",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10035",
+      "name": "R1-10035",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10046",
+      "name": "R1-10046",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10047",
+      "name": "R1-10047",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10057",
+      "name": "R1-10057",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10134",
+      "name": "R1-10134",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10134B",
+      "name": "R1-10134B",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10149",
+      "name": "R1-10149",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10160",
+      "name": "R1-10160",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10226",
+      "name": "R1-10226",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10226MC",
+      "name": "R1-10226MC",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10260",
+      "name": "R1-10260",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10278",
+      "name": "R1-10278",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-1034",
+      "name": "R1-1034",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10356",
+      "name": "R1-10356",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10372",
+      "name": "R1-10372",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10454",
+      "name": "R1-10454",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-10470",
+      "name": "R1-10470",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-1073",
+      "name": "R1-1073",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-1120",
+      "name": "R1-1120",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-1203",
+      "name": "R1-1203",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15023",
+      "name": "R1-15023",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15080",
+      "name": "R1-15080",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15081",
+      "name": "R1-15081",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15155",
+      "name": "R1-15155",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15197",
+      "name": "R1-15197",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15198",
+      "name": "R1-15198",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15199",
+      "name": "R1-15199",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15200",
+      "name": "R1-15200",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15201",
+      "name": "R1-15201",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15202",
+      "name": "R1-15202",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15203",
+      "name": "R1-15203",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15256",
+      "name": "R1-15256",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15280",
+      "name": "R1-15280",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15328",
+      "name": "R1-15328",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15456",
+      "name": "R1-15456",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15457",
+      "name": "R1-15457",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15458",
+      "name": "R1-15458",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15459",
+      "name": "R1-15459",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15460",
+      "name": "R1-15460",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15653",
+      "name": "R1-15653",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15737",
+      "name": "R1-15737",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15784",
+      "name": "R1-15784",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15853",
+      "name": "R1-15853",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15933",
+      "name": "R1-15933",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15935",
+      "name": "R1-15935",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15936",
+      "name": "R1-15936",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-15951",
+      "name": "R1-15951",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-16140",
+      "name": "R1-16140",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-16158",
+      "name": "R1-16158",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-16202",
+      "name": "R1-16202",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-16504",
+      "name": "R1-16504",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-16529",
+      "name": "R1-16529",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-16574",
+      "name": "R1-16574",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2255",
+      "name": "R1-2255",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2326",
+      "name": "R1-2326",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2331",
+      "name": "R1-2331",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2354",
+      "name": "R1-2354",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2356",
+      "name": "R1-2356",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2360",
+      "name": "R1-2360",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2361",
+      "name": "R1-2361",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2391",
+      "name": "R1-2391",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-2392",
+      "name": "R1-2392",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3158",
+      "name": "R1-3158",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3373",
+      "name": "R1-3373",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3443",
+      "name": "R1-3443",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3449",
+      "name": "R1-3449",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3509",
+      "name": "R1-3509",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3513",
+      "name": "R1-3513",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3517",
+      "name": "R1-3517",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3527",
+      "name": "R1-3527",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3624",
+      "name": "R1-3624",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3625",
+      "name": "R1-3625",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-3711",
+      "name": "R1-3711",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-4003",
+      "name": "R1-4003",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-4004",
+      "name": "R1-4004",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-4155",
+      "name": "R1-4155",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-4164",
+      "name": "R1-4164",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8008",
+      "name": "R1-8008",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8026, R1-8027, R1-8028, R1-15456, R1-15460",
+      "name": "R1-8026, R1-8027, R1-8028, R1-15456, R1-15460",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8026",
+      "name": "R1-8026",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8027",
+      "name": "R1-8027",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8028",
+      "name": "R1-8028",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8029",
+      "name": "R1-8029",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8030",
+      "name": "R1-8030",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8032",
+      "name": "R1-8032",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8032A",
+      "name": "R1-8032A",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8032B",
+      "name": "R1-8032B",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8035",
+      "name": "R1-8035",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8039",
+      "name": "R1-8039",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8107",
+      "name": "R1-8107",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8112",
+      "name": "R1-8112",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8141",
+      "name": "R1-8141",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8175",
+      "name": "R1-8175",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8176",
+      "name": "R1-8176",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8190",
+      "name": "R1-8190",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8202",
+      "name": "R1-8202",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8325",
+      "name": "R1-8325",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8383",
+      "name": "R1-8383",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8389",
+      "name": "R1-8389",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8391",
+      "name": "R1-8391",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8495",
+      "name": "R1-8495",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8577",
+      "name": "R1-8577",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8636",
+      "name": "R1-8636",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8638",
+      "name": "R1-8638",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8650",
+      "name": "R1-8650",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8717",
+      "name": "R1-8717",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8750",
+      "name": "R1-8750",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8815",
+      "name": "R1-8815",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8959",
+      "name": "R1-8959",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-8967",
+      "name": "R1-8967",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-9035",
+      "name": "R1-9035",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-9035A",
+      "name": "R1-9035A",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-9035B",
+      "name": "R1-9035B",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-9035C",
+      "name": "R1-9035C",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "R1-9035D",
+      "name": "R1-9035D",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "V1-10000",
+      "name": "V1-10000",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "V1-10051",
+      "name": "V1-10051",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "V1-10523",
+      "name": "V1-10523",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "V1-10524",
+      "name": "V1-10524",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "V1-10562",
+      "name": "V1-10562",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "V1-10667",
+      "name": "V1-10667",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "X3299AAM",
+      "name": "X3299AAM",
+      "val": 10,
+      "color": "#2563EB",
+      "type": "spec",
+      "exists": true
+    },
+    {
+      "id": "東林易",
+      "name": "東林易",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "NCA",
+      "name": "NCA",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Frank Lin",
+      "name": "Frank Lin",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "人才招募",
+      "name": "人才招募",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "履歷篩選",
+      "name": "履歷篩選",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Mike",
+      "name": "Mike",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Elsie",
+      "name": "Elsie",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Unknown",
+      "name": "Unknown",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Doris Han",
+      "name": "Doris Han",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Jack Fan",
+      "name": "Jack Fan",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "104 Job Bank",
+      "name": "104 Job Bank",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "SPEC",
+      "name": "SPEC",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "PROJECT",
+      "name": "PROJECT",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "EXTERNAL",
+      "name": "EXTERNAL",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "External",
+      "name": "External",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "尼得立斯",
+      "name": "尼得立斯",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "凱益股份有限公司",
+      "name": "凱益股份有限公司",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "External Email",
+      "name": "External Email",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "凱益官網",
+      "name": "凱益官網",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "凱益",
+      "name": "凱益",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "耀群科技",
+      "name": "耀群科技",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Attachment Blocked",
+      "name": "Attachment Blocked",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "教育訓練",
+      "name": "教育訓練",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Complaint QE-003414",
+      "name": "Complaint QE-003414",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "客訴",
+      "name": "客訴",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Acacia",
+      "name": "Acacia",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Important Reminder",
+      "name": "Important Reminder",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "台灣電計",
+      "name": "台灣電計",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Chris Tseng",
+      "name": "Chris Tseng",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    },
+    {
+      "id": "Boris Han",
+      "name": "Boris Han",
+      "val": 5,
+      "color": "#475569",
+      "type": "unresolved",
+      "exists": false
+    }
+  ],
+  "links": [
+    {
+      "source": "CAPA_東林易_Unknown_0",
+      "target": "東林易"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_0",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_0",
+      "target": "NCA"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_0",
+      "target": "R1-10134"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_1",
+      "target": "東林易"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_1",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_1",
+      "target": "NCA"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_1",
+      "target": "R1-10134"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_2",
+      "target": "東林易"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_2",
+      "target": "Frank Lin"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_2",
+      "target": "NCA"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_2",
+      "target": "R1-10134"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_3",
+      "target": "東林易"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_3",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_3",
+      "target": "NCA"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_3",
+      "target": "R1-10134"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_4",
+      "target": "東林易"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_4",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_4",
+      "target": "NCA"
+    },
+    {
+      "source": "CAPA_東林易_Unknown_4",
+      "target": "R1-10134"
+    },
+    {
+      "source": "cleanroom",
+      "target": "Cleanroom Inspection"
+    },
+    {
+      "source": "hsinchu_industrial_park",
+      "target": "Mouldex"
+    },
+    {
+      "source": "新竹縣湖口鄉",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "新竹縣湖口鄉",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "104人力銀行",
+      "target": "人才招募"
+    },
+    {
+      "source": "104人力銀行",
+      "target": "履歷篩選"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "Mouldex"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "iris_tai",
+      "target": "Mouldex"
+    },
+    {
+      "source": "iris_tai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "su_wan-ching",
+      "target": "Wo Ya Technology"
+    },
+    {
+      "source": "su_wan-ching",
+      "target": "IPQC"
+    },
+    {
+      "source": "su_wan-ching",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mike"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "估算表"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Elsie"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Su Wan-ching"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Elsie"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Elsie"
+    },
+    {
+      "source": "蔡丞甯",
+      "target": "華矽創新股份有限公司"
+    },
+    {
+      "source": "蔡丞甯",
+      "target": "AOI機台"
+    },
+    {
+      "source": "蔡丞甯",
+      "target": "平坦度量測"
+    },
+    {
+      "source": "陳玫婷",
+      "target": "歐帕生技醫藥股份有限公司"
+    },
+    {
+      "source": "陳玫婷",
+      "target": "ISO 9001"
+    },
+    {
+      "source": "陳玫婷",
+      "target": "CAPA"
+    },
+    {
+      "source": "cleanroom_inspection",
+      "target": "Wo Ya Technology"
+    },
+    {
+      "source": "cleanroom_inspection",
+      "target": "Cleanroom"
+    },
+    {
+      "source": "fai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "fai",
+      "target": "QIP"
+    },
+    {
+      "source": "平坦度量測",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "deviation_investigation",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "deviation_investigation",
+      "target": "GMP"
+    },
+    {
+      "source": "NCA_東林易_Unknown_0",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_0",
+      "target": "R1-8650"
+    },
+    {
+      "source": "NCA_東林易_Unknown_0",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_1",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_1",
+      "target": "Unknown"
+    },
+    {
+      "source": "NCA_東林易_Unknown_1",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_2",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_2",
+      "target": "Unknown"
+    },
+    {
+      "source": "NCA_東林易_Unknown_2",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_3",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_3",
+      "target": "Unknown"
+    },
+    {
+      "source": "NCA_東林易_Unknown_3",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_4",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_4",
+      "target": "Unknown"
+    },
+    {
+      "source": "NCA_東林易_Unknown_4",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_5",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_5",
+      "target": "R1-15459"
+    },
+    {
+      "source": "NCA_東林易_Unknown_5",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_6",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_6",
+      "target": "R1-15459"
+    },
+    {
+      "source": "NCA_東林易_Unknown_6",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "NCA_東林易_Unknown_7",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_7",
+      "target": "Unknown"
+    },
+    {
+      "source": "NCA_東林易_Unknown_7",
+      "target": "Doris Han"
+    },
+    {
+      "source": "NCA_東林易_Unknown_8",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_8",
+      "target": "R1-8650"
+    },
+    {
+      "source": "NCA_東林易_Unknown_8",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "NCA_東林易_Unknown_9",
+      "target": "東林易"
+    },
+    {
+      "source": "NCA_東林易_Unknown_9",
+      "target": "R1-8650"
+    },
+    {
+      "source": "NCA_東林易_Unknown_9",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "面談",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "面談",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "Mouldex"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "aoi機台",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "aoi機台",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "capa",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "capa",
+      "target": "Root Cause Analysis"
+    },
+    {
+      "source": "cleanroom",
+      "target": "Cleanroom Inspection"
+    },
+    {
+      "source": "cleanroom_inspection",
+      "target": "Wo Ya Technology"
+    },
+    {
+      "source": "cleanroom_inspection",
+      "target": "Cleanroom"
+    },
+    {
+      "source": "cmm",
+      "target": "FAI"
+    },
+    {
+      "source": "cmm",
+      "target": "FAI"
+    },
+    {
+      "source": "deviation_investigation",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "deviation_investigation",
+      "target": "GMP"
+    },
+    {
+      "source": "fai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "fai",
+      "target": "QIP"
+    },
+    {
+      "source": "gmp",
+      "target": "歐帕生技醫藥股份有限公司"
+    },
+    {
+      "source": "hsinchu_industrial_park",
+      "target": "Mouldex"
+    },
+    {
+      "source": "ipqc",
+      "target": "Su Wan-ching"
+    },
+    {
+      "source": "iris_tai",
+      "target": "Mouldex"
+    },
+    {
+      "source": "iris_tai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "iso_9001",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "mouldex",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "Hsinchu Industrial Park"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "104 Job Bank"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "Elsie"
+    },
+    {
+      "source": "mouldex",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "qip",
+      "target": "FAI"
+    },
+    {
+      "source": "qip",
+      "target": "R1-10000"
+    },
+    {
+      "source": "root_cause_analysis",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "root_cause_analysis",
+      "target": "Deviation Investigation"
+    },
+    {
+      "source": "su_wan-ching",
+      "target": "Wo Ya Technology"
+    },
+    {
+      "source": "su_wan-ching",
+      "target": "IPQC"
+    },
+    {
+      "source": "su_wan-ching",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mike"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "估算表"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Elsie"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Su Wan-ching"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Elsie"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Elsie"
+    },
+    {
+      "source": "wo_ya_technology",
+      "target": "Su Wan-ching"
+    },
+    {
+      "source": "wo_ya_technology",
+      "target": "Cleanroom Inspection"
+    },
+    {
+      "source": "估算表",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "估算表",
+      "target": "量測成本"
+    },
+    {
+      "source": "品管工程師",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "品管工程師",
+      "target": "Mouldex"
+    },
+    {
+      "source": "品管檢驗員",
+      "target": "Mouldex"
+    },
+    {
+      "source": "品管檢驗員",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "平坦度量測",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "新竹縣湖口鄉",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "新竹縣湖口鄉",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "歐帕生技醫藥股份有限公司",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "華矽創新股份有限公司",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "蔡丞甯",
+      "target": "華矽創新股份有限公司"
+    },
+    {
+      "source": "蔡丞甯",
+      "target": "AOI機台"
+    },
+    {
+      "source": "蔡丞甯",
+      "target": "平坦度量測"
+    },
+    {
+      "source": "量測成本",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "量測成本",
+      "target": "估算表"
+    },
+    {
+      "source": "陳玫婷",
+      "target": "歐帕生技醫藥股份有限公司"
+    },
+    {
+      "source": "陳玫婷",
+      "target": "ISO 9001"
+    },
+    {
+      "source": "陳玫婷",
+      "target": "CAPA"
+    },
+    {
+      "source": "面談",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "面談",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "Mouldex"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "abbie_tai",
+      "target": "R1-10000"
+    },
+    {
+      "source": "April_2026_Crisis_Investigation",
+      "target": "R1-8650"
+    },
+    {
+      "source": "capa",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "capa",
+      "target": "Root Cause Analysis"
+    },
+    {
+      "source": "capa",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "capa",
+      "target": "Root Cause Analysis"
+    },
+    {
+      "source": "Compliance_Standard_v3",
+      "target": "SPEC"
+    },
+    {
+      "source": "Compliance_Standard_v3",
+      "target": "PROJECT"
+    },
+    {
+      "source": "deviation_investigation",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "deviation_investigation",
+      "target": "GMP"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "EXTERNAL"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "External"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "尼得立斯"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "凱益股份有限公司"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "External Email"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "凱益官網"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "凱益"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "耀群科技"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "Attachment Blocked"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "教育訓練"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "Complaint QE-003414"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "客訴"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "Acacia"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "Important Reminder"
+    },
+    {
+      "source": "Global_Quality_Heatmap",
+      "target": "台灣電計"
+    },
+    {
+      "source": "gmp",
+      "target": "歐帕生技醫藥股份有限公司"
+    },
+    {
+      "source": "gmp",
+      "target": "歐帕生技醫藥股份有限公司"
+    },
+    {
+      "source": "ipqc",
+      "target": "Su Wan-ching"
+    },
+    {
+      "source": "iso_9001",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "iso_9001",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "mouldex",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "Hsinchu Industrial Park"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "104 Job Bank"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "Elsie"
+    },
+    {
+      "source": "mouldex",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "mouldex",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "mouldex",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "qip",
+      "target": "FAI"
+    },
+    {
+      "source": "qip",
+      "target": "R1-10000"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Chris Tseng"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "R1-15853_April_Crisis_Report",
+      "target": "Jack Fan"
+    },
+    {
+      "source": "root_cause_analysis",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "root_cause_analysis",
+      "target": "Deviation Investigation"
+    },
+    {
+      "source": "root_cause_analysis",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "root_cause_analysis",
+      "target": "Deviation Investigation"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mouldex"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "Mike"
+    },
+    {
+      "source": "wesley_chang",
+      "target": "估算表"
+    },
+    {
+      "source": "wo_ya_technology",
+      "target": "Su Wan-ching"
+    },
+    {
+      "source": "wo_ya_technology",
+      "target": "Cleanroom Inspection"
+    },
+    {
+      "source": "估算表",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "估算表",
+      "target": "量測成本"
+    },
+    {
+      "source": "品管工程師",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "品管工程師",
+      "target": "Mouldex"
+    },
+    {
+      "source": "品管檢驗員",
+      "target": "Mouldex"
+    },
+    {
+      "source": "品管檢驗員",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "CAPA_東林易_Unknown_0"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "CAPA_東林易_Unknown_1"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "CAPA_東林易_Unknown_2"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "CAPA_東林易_Unknown_3"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "CAPA_東林易_Unknown_4"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_0"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_1"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_2"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_3"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_4"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_5"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_6"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_7"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_8"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "NCA_東林易_Unknown_9"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "東林易_Quality_Diagnostic"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "R1-10134"
+    },
+    {
+      "source": "東林易_Quality_Diagnostic",
+      "target": "X3299AAM"
+    },
+    {
+      "source": "歐帕生技醫藥股份有限公司",
+      "target": "陳玫婷"
+    },
+    {
+      "source": "華矽創新股份有限公司",
+      "target": "蔡丞甯"
+    },
+    {
+      "source": "量測成本",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "量測成本",
+      "target": "估算表"
+    },
+    {
+      "source": "量測成本",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "量測成本",
+      "target": "估算表"
+    },
+    {
+      "source": "R1-10000",
+      "target": "Abbie Tai"
+    },
+    {
+      "source": "R1-10000",
+      "target": "Wesley Chang"
+    },
+    {
+      "source": "R1-10000",
+      "target": "Iris Tai"
+    },
+    {
+      "source": "R1-10000",
+      "target": "FAI"
+    },
+    {
+      "source": "X3299AAM",
+      "target": "東林易"
+    },
+    {
+      "source": "X3299AAM",
+      "target": "R1-10134"
+    },
+    {
+      "source": "X3299AAM",
+      "target": "Boris Han"
+    }
+  ]
+}

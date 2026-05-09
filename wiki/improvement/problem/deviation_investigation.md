@@ -1,4 +1,4 @@
----
+﻿---
 title: "Deviation Investigation"
 aliases: ["異常調查"]
 type: event

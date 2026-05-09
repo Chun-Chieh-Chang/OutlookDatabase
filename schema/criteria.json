@@ -1,0 +1,35 @@
+{
+  "ontology_version": "3.0",
+  "criteria": {
+    "iqc": {
+      "required_fields": ["vendor_name", "material_type"],
+      "patterns": ["Incoming", "Supplier", "料號", "承認書"],
+      "compliance_check": "Must link to a SPEC node if material code is present."
+    },
+    "pqc": {
+      "required_fields": ["mold_id", "machine_no"],
+      "patterns": ["FAI", "首件", "巡檢", "M-[0-9]{3}", "Parameter"],
+      "compliance_check": "Must link to a PROJECT node."
+    },
+    "spec": {
+      "required_fields": ["drawing_no", "rev"],
+      "patterns": ["Drawing", "圖號", "D-[0-9]{5}", "Spec", "尺寸"],
+      "compliance_check": "Acts as a parent node for MEASURE data."
+    },
+    "capa": {
+      "required_fields": ["case_id", "root_cause", "corrective_action"],
+      "patterns": ["Complaint", "8D", "客訴", "根因", "CAPA", "Prevention"],
+      "compliance_check": "Must have non-empty root_cause and corrective_action fields."
+    },
+    "nca": {
+      "required_fields": ["anomaly_desc", "disposition"],
+      "patterns": ["Anomaly", "異常", "Sorting", "挑選", "Rework", "返工"],
+      "compliance_check": "Categorized as 'Open' until disposition is confirmed."
+    },
+    "msa": {
+      "required_fields": ["tool_id", "calibration_status"],
+      "patterns": ["Calibration", "校正", "MSA", "R&R", "量具"],
+      "compliance_check": "Must link to PQC or OQC measurement activities."
+    }
+  }
+}

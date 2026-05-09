@@ -1,4 +1,4 @@
-# SkillsBuilder 工業知識圖譜 v2 (Industrial Knowledge Graph)
+﻿# SkillsBuilder 工業知識圖譜 v2 (Industrial Knowledge Graph)
 
 > 本索引整合「核心維度」、「資源管理(4M1E)」、「生命週期(PDCA)」與「改善機制(CAPA)」，提供全方位決策支援。
 

@@ -1,557 +1,532 @@
-// SkillsBuilder Lite - Main JS
-// Digital Art Director & Architect Edition
+/**
+ * SkillsBuilder AI - Main Frontend Controller
+ * v3.1: Visual Hardening & Live Pulse Monitoring
+ */
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadDashboardStats();
-    checkAIStatus();
-    loadRecentEmails();
-    
-    // 定期更新
-    setInterval(loadDashboardStats, 30000);
-    setInterval(checkAIStatus, 15000);
-});
-
-// Global State
-let searchState = {
+const AppState = {
     keyword: '',
-    year: null,
     page: 1,
-    totalPages: 1
+    limit: 12,
+    wikiData: [],
+    currentView: 'dashboard',
+    lastSyncNodeCount: 0
 };
 
-function setSearchValue(val) {
-    const input = document.getElementById('searchKeyword');
-    if (input) {
-        input.value = val;
-        searchState.year = null; // Clear year filter when manually typing or clicking new keyword
-        searchEmails(1);
-    }
-}
-
-function setYearFilter(year) {
-    searchState.year = year;
-    searchEmails(1);
-}
-
-function togglePassword(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.type = el.type === 'password' ? 'text' : 'password';
-    }
-}
-
-function clearSearch() {
-    const input = document.getElementById('searchKeyword');
-    const results = document.getElementById('searchResultsCard');
-    const dashboard = document.getElementById('dashboardInitial');
-    const wiki = document.getElementById('wikiAnswer');
-    
-    if (input) input.value = '';
-    if (results) results.classList.add('hidden');
-    if (dashboard) dashboard.classList.remove('hidden');
-    if (wiki) wiki.classList.add('hidden');
-    
-    // Reset state
-    searchState.keyword = '';
-    searchState.page = 1;
-}
-
-// UI Logic
-function showLoading(msg = '處理中...') {
-    const overlay = document.getElementById('loadingOverlay');
-    const message = document.getElementById('loadingMessage');
-    const logContainer = document.getElementById('log-container');
-    
-    if (overlay) overlay.classList.remove('hidden');
-    if (message) message.textContent = msg;
-    if (logContainer) logContainer.classList.add('hidden');
-}
-
-function hideLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.classList.add('hidden');
-}
-
-function showInlineLoading(msg = '處理中...') {
-    const el = document.getElementById('inlineLoading');
-    const msgEl = document.getElementById('inlineLoadingMessage');
-    if (el) el.classList.remove('hidden');
-    if (msgEl) msgEl.textContent = msg;
-    
-    // Hide results while loading for better focus
-    document.getElementById('searchResultsCard').classList.add('hidden');
-    document.getElementById('wikiAnswer').classList.add('hidden');
-}
-
-function hideInlineLoading() {
-    const el = document.getElementById('inlineLoading');
-    if (el) el.classList.add('hidden');
-}
-
-function showView(viewId) {
-    if (viewId === 'wiki') {
-        document.getElementById('view-wiki').classList.remove('hidden');
-        loadWikiIndex();
-    }
-}
-
-function loadDashboardStats() {
-    fetch('/api/dashboard_stats')
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('dashEntityCount').textContent = data.entity_count || 0;
-            document.getElementById('dashConceptCount').textContent = data.concept_count || 0;
-            document.getElementById('dashSenderCount').textContent = data.unique_senders || 0;
-            document.getElementById('dashTotalMails').textContent = data.total_emails || 0;
-        })
-        .catch(err => console.error('Dashboard Stats Error:', err));
-}
-
-function loadRecentEmails() {
-    fetch('/api/stats')
-        .then(r => r.json())
-        .then(data => {
-            const container = document.getElementById('recentEmails');
-            if (data.recent_emails && data.recent_emails.length > 0) {
-                container.innerHTML = data.recent_emails.map(email => `
-                    <div class="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all cursor-default">
-                        <div class="truncate mr-4">
-                            <div class="font-bold text-slate-700 dark:text-slate-200">${email.subject}</div>
-                            <div class="text-[10px] text-slate-400">${email.sender_name}</div>
-                        </div>
-                        <div class="text-[10px] text-slate-400 whitespace-nowrap">${email.received_time.split(' ')[0]}</div>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = '<div class="p-4 text-center text-slate-400">尚無提取紀錄</div>';
-            }
-        });
-}
-
-function searchEmails(page = 1) {
-    const keyword = document.getElementById('searchKeyword').value;
-    if (!keyword) return;
-    
-    // Reset state if it's a new keyword
-    if (keyword !== searchState.keyword) {
-        searchState.keyword = keyword;
-        searchState.page = 1;
-    } else {
-        searchState.page = page;
-    }
-    
-    showInlineLoading(searchState.page === 1 ? '搜尋中...' : `正在載入第 ${searchState.page} 頁...`);
-    
-    fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            keyword: searchState.keyword,
-            year: searchState.year,
-            page: searchState.page,
-            limit: 20
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
-        const container = document.getElementById('searchResults');
-        const card = document.getElementById('searchResultsCard');
-        const dashboard = document.getElementById('dashboardInitial');
-        const wikiAnswer = document.getElementById('wikiAnswer');
-        const pagination = document.getElementById('pagination');
-        
-        if (dashboard) dashboard.classList.add('hidden');
-        if (wikiAnswer) wikiAnswer.classList.add('hidden');
-        if (card) card.classList.remove('hidden');
-        
-        const countEl = document.getElementById('searchCount');
-        if (countEl) countEl.textContent = `共找到 ${data.total_count} 筆結果`;
-
-        // Render Year Distribution Chips
-        const suggestionBox = document.querySelector('.search-suggestions');
-        if (suggestionBox && data.year_distribution) {
-            let yearHtml = '<span style="color: #64748b; font-size: 11px; margin-right: 10px;">年份分佈:</span>';
-            // Add a "Clear" chip if a year is selected
-            if (searchState.year) {
-                yearHtml += `<span class="suggestion-chip" style="background: #ef4444; color: white;" onclick="setYearFilter(null)">清除過濾 (${searchState.year})</span>`;
-            }
-            for (const [year, count] of Object.entries(data.year_distribution)) {
-                const isActive = searchState.year === year;
-                const activeStyle = isActive ? 'background: #3b82f6; color: white;' : '';
-                yearHtml += `<span class="suggestion-chip" style="${activeStyle}" onclick="setYearFilter('${year}')">${year} (${count})</span>`;
-            }
-            suggestionBox.innerHTML = yearHtml;
+const UI = {
+    get: (id) => document.getElementById(id),
+    text: (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; },
+    show: (id) => { const el = document.getElementById(id); if(el) el.classList.remove('hidden'); },
+    hide: (id) => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); },
+    // 強化版狀態看板
+    log: (msg, type = 'info') => {
+        console.log(`%c[SkillsBuilder] %c${msg}`, "color: #3b82f6; font-weight: bold", "color: inherit");
+        const ticker = document.getElementById('ticker-content');
+        if (ticker) {
+            const entry = document.createElement('div');
+            entry.className = `text-[10px] py-1 border-b border-white/5 last:border-0 ${type === 'error' ? 'text-rose-400' : 'text-emerald-400/90'} animate-fade-in`;
+            entry.innerHTML = `<span class="opacity-30 mr-2 font-mono">${new Date().toLocaleTimeString([], {hour12:false})}</span> ${msg}`;
+            ticker.prepend(entry);
+            if (ticker.childNodes.length > 5) ticker.removeChild(ticker.lastChild);
         }
-        
-        searchState.totalPages = data.total_pages;
-        
-        if (data.results && data.results.length > 0) {
-            container.innerHTML = data.results.map(res => `
-                <div class="p-4 border-b border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all rounded-2xl">
-                    <div class="flex justify-between mb-1">
-                        <span class="font-bold text-blue-500">${res.sender_name}</span>
-                        <span class="text-xs text-slate-400">${res.received_time}</span>
-                    </div>
-                    <div class="font-bold mb-2 text-slate-800 dark:text-slate-100">${res.subject}</div>
-                    <div class="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">${res.body}</div>
-                </div>
-            `).join('');
-            
-            // Update Pagination UI
-            if (pagination && searchState.totalPages > 1) {
-                pagination.classList.remove('hidden');
-                document.getElementById('pageInfo').textContent = `第 ${data.page} / ${data.total_pages} 頁`;
-                document.getElementById('prevPage').disabled = data.page <= 1;
-                document.getElementById('nextPage').disabled = data.page >= data.total_pages;
-                
-                // Add visual feedback for disabled buttons
-                document.getElementById('prevPage').style.opacity = data.page <= 1 ? '0.5' : '1';
-                document.getElementById('nextPage').style.opacity = data.page >= data.total_pages ? '0.5' : '1';
-            } else if (pagination) {
-                pagination.classList.add('hidden');
-            }
-            
-            // Scroll to top of results if on a new page
-            if (page > 1 && card) {
-                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        } else {
-            container.innerHTML = '<div class="p-8 text-center text-slate-400">未找到相關郵件</div>';
-            if (pagination) pagination.classList.add('hidden');
-        }
-    })
-    .finally(hideInlineLoading);
-}
-
-function changePage(delta) {
-    const newPage = searchState.page + delta;
-    if (newPage >= 1 && newPage <= searchState.totalPages) {
-        searchEmails(newPage);
-    }
-}
-
-function askWiki() {
-    const query = document.getElementById('searchKeyword').value;
-    if (!query) return;
-    
-    showInlineLoading('AI 思考中...');
-    fetch('/api/ask_wiki', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: query })
-    })
-    .then(r => r.json())
-    .then(data => {
-        const wikiAnswer = document.getElementById('wikiAnswer');
-        const dashboard = document.getElementById('dashboardInitial');
-        const searchCard = document.getElementById('searchResultsCard');
-        
-        dashboard.classList.add('hidden');
-        searchCard.classList.add('hidden');
-        wikiAnswer.classList.remove('hidden');
-        
-        if (data.error) {
-            wikiAnswer.innerHTML = `<div class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle mr-2"></i>API 錯誤: ${data.error}</div>`;
-        } else {
-            // Using marked if available
-            const formattedAnswer = typeof marked !== 'undefined' ? marked.parse(data.answer) : data.answer.replace(/\n/g, '<br>');
-            wikiAnswer.innerHTML = `
-                <div class="flex items-center gap-2 mb-6 text-indigo-500 font-bold border-b border-indigo-100 dark:border-indigo-900/30 pb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 12L2.1 12.1"/><path d="M12 12l9.9-0.1"/><path d="M12 12V22"/><path d="M12 12l-7-7"/><path d="M12 12l7 7"/></svg>
-                    AI 深度分析結果
-                </div>
-                <div class="text-slate-700 dark:text-slate-200 leading-relaxed">${formattedAnswer}</div>
-            `;
-        }
-    })
-    .catch(err => {
-        const wikiAnswer = document.getElementById('wikiAnswer');
-        wikiAnswer.classList.remove('hidden');
-        wikiAnswer.innerHTML = `<div class="text-rose-500 font-bold">API 錯誤: ${err.message}</div>`;
-    })
-    .finally(hideInlineLoading);
-}
-
-function loadWikiIndex() {
-    const wikiIndex = document.getElementById('wikiIndex');
-    const wikiContent = document.getElementById('wikiContent');
-    
-    wikiIndex.innerHTML = '<div class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></div>';
-    
-    fetch('/api/wiki/index')
-        .then(r => r.json())
-        .then(data => {
-            const lines = data.content.split('\n');
-            let html = '<div class="space-y-1">';
-            
-            if (data.content.includes('尚未建構')) {
-                wikiContent.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-center p-12">
-                        <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-2">知識圖譜尚未建構</h3>
-                        <p class="text-slate-500 mb-8 max-w-md">我們需要透過 AI 分析您的郵件，提取出專案、人物與核心概念，才能建立連結。</p>
-                        <button onclick="buildWikiFromModal()" class="btn btn-primary btn-lg px-10 py-4 shadow-xl shadow-blue-500/20">
-                            <i class="fas fa-magic mr-2"></i> 立即啟動 AI 建構
-                        </button>
-                    </div>
-                `;
-                wikiIndex.innerHTML = '';
-                return;
-            }
-
-            lines.forEach(line => {
-                const match = line.match(/\[(.*?)\]\((.*?)\)/);
-                if (match) {
-                    const name = match[1];
-                    const path = match[2];
-                    html += `
-                        <button onclick="loadWikiPage('${path}')" class="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all text-sm flex items-center gap-3 group">
-                            <span class="w-2 h-2 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-all"></span>
-                            <span class="truncate">${name}</span>
-                        </button>`;
-                }
+    },
+    // KaTeX 渲染驅動
+    renderMath: (id) => {
+        const el = document.getElementById(id);
+        if (el && window.renderMathInElement) {
+            // 使用 requestAnimationFrame 確保 DOM 已渲染
+            requestAnimationFrame(() => {
+                window.renderMathInElement(el, {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: false},
+                        {left: "\\(", right: "\\)", display: false},
+                        {left: "\\[", right: "\\]", display: true}
+                    ],
+                    ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+                    throwOnError : false
+                });
             });
-            html += '</div>';
-            wikiIndex.innerHTML = html;
-        });
-}
-
-function loadWikiPage(path) {
-    const contentEl = document.getElementById('wikiContent');
-    contentEl.innerHTML = '<div class="p-12 text-center"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
-    
-    fetch(`/api/wiki/page/${path}`)
-        .then(r => r.json())
-        .then(data => {
-            const formatted = typeof marked !== 'undefined' ? marked.parse(data.content) : data.content;
-            contentEl.innerHTML = `
-                <div class="prose dark:prose-invert max-w-none">
-                    ${formatted}
-                </div>
-                <button onclick="loadWikiIndex()" class="btn btn-secondary mt-8"><i class="fas fa-arrow-left mr-2"></i>返回索引</button>
-            `;
-        });
-}
-
-function buildWikiFromModal() {
-    // 隱藏 Wiki 視窗並啟動流式進度條，避免超時
-    document.getElementById('view-wiki').classList.add('hidden');
-    runPipelineWithStream();
-}
-
-function checkAIStatus() {
-    fetch('/api/ai_status')
-        .then(response => response.json())
-        .then(data => {
-            const statusEl = document.getElementById('aiStatus');
-            if (statusEl) {
-                const dot = statusEl.querySelector('span');
-                if (data.available) {
-                    statusEl.childNodes[statusEl.childNodes.length - 1].textContent = ` AI 在線 (${data.model})`;
-                    if (dot) {
-                        dot.className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]';
-                    }
-                } else {
-                    statusEl.childNodes[statusEl.childNodes.length - 1].textContent = ' AI 離線 (點擊重連)';
-                    if (dot) {
-                        dot.className = 'w-2 h-2 rounded-full bg-rose-500 animate-pulse';
-                    }
-                }
-            }
-        });
-}
-
-
-function reconnectAI() {
-    showLoading('正在重新連線 AI 服務...');
-    fetch('/api/ai_reconnect', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            if (data.available) {
-                alert('✅ AI 已重新連線: ' + data.model);
-                checkAIStatus();
-            } else {
-                const msg = data.provider === 'google' 
-                    ? '❌ 重連失敗，請檢查 Gemini API Key 是否有效' 
-                    : '❌ 重連失敗，請檢查 Ollama 是否運行';
-                alert(msg);
-            }
-        })
-        .catch(err => alert('❌ 連線異常: ' + err.message))
-        .finally(hideLoading);
-}
-
-
-async function runPipelineWithStream() {
-    const overlay = document.getElementById('loadingOverlay');
-    const message = document.getElementById('loadingMessage');
-    const logContainer = document.getElementById('log-container');
-    
-    if (overlay) overlay.classList.remove('hidden');
-    if (logContainer) {
-        logContainer.classList.remove('hidden');
-        logContainer.innerHTML = '';
+        }
     }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    UI.log('SkillsBuilder Engine 核心初始化...');
+    loadDashboardStats();
+    loadRecentEmails();
+    checkAIStatus();
     
+    setInterval(() => {
+        if (AppState.currentView === '3d') sync3DGraph();
+        loadDashboardStats();
+        checkAIStatus();
+    }, 8000);
+});
+
+async function checkAIStatus() {
     try {
-        const response = await fetch('/api/pipeline/stream');
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
+        const resp = await fetch('/api/ai_status?t=' + Date.now());
+        const data = await resp.json();
+        const pill = UI.get('aiStatusPill');
+        const dot = UI.get('aiStatusDot');
+        const text = UI.get('aiStatusText');
+        if(!pill) return;
         
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            
-            lines.forEach(line => {
-                if (line.startsWith('data: ')) {
-                    const content = line.replace('data: ', '').trim();
-                    if (content) {
-                        const logLine = document.createElement('div');
-                        logLine.className = 'py-0.5 border-b border-slate-700/30 last:border-0';
-                        if (content.includes('🚀') || content.includes('🧠')) logLine.className += ' text-blue-400 font-bold mt-2';
-                        if (content.includes('✅') || content.includes('✨')) logLine.className += ' text-emerald-400';
-                        logLine.textContent = content;
-                        logContainer.appendChild(logLine);
-                        logContainer.scrollTop = logContainer.scrollHeight;
-                        
-                        if (content.includes('🚀')) message.textContent = '正在提取郵件...';
-                        if (content.includes('🧠')) message.textContent = '正在建構知識圖譜...';
-                    }
-                }
-            });
-        }
-        
-        if (logContainer.innerText.includes('✅')) {
-            alert('✅ 全流程執行成功！');
-            location.reload();
+        if (data.available) {
+            pill.className = 'ai-status-pill px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold flex items-center gap-2 transition-colors';
+            dot.className = 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse';
+            text.textContent = 'OLLAMA ONLINE';
         } else {
-            setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 3000);
+            pill.className = 'ai-status-pill px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold flex items-center gap-2 transition-colors';
+            dot.className = 'w-1.5 h-1.5 bg-slate-400 rounded-full';
+            text.textContent = 'OLLAMA OFFLINE';
+        }
+    } catch (err) {}
+}
+
+async function loadDashboardStats() {
+    try {
+        const resp = await fetch('/api/dashboard_stats?t=' + Date.now());
+        const data = await resp.json();
+        UI.text('dashTotalMails', data.total_emails || 0);
+        UI.get('dashEntityCount').textContent = data.entity_count || 0;
+        
+        // Fetch Evolution Metrics
+        try {
+            const evo = await fetch('/api/evolution').then(r => r.json());
+            UI.get('dashEvolutionScore').textContent = evo.score;
+            UI.get('dashEvolutionStatus').textContent = evo.status.toUpperCase();
+        } catch (e) { console.error('Evo metrics failed', e); }
+
+        UI.text('dashConceptCount', data.concept_count || 0);
+        UI.text('dashSenderCount', data.unique_senders || 0);
+    } catch (err) { UI.log('看板數據抓取異常', 'error'); }
+}
+
+// --- 3D 圖譜視覺強化版 ---
+let graphInstance = null;
+
+async function init3DGraph() {
+    if (graphInstance) return;
+    UI.log('開啟 3D 空間，正在部署文字渲染陣列...');
+    const elem = UI.get('3d-graph');
+    if (!elem) return;
+
+    try {
+        const resp = await fetch('/api/graph_data?t=' + Date.now());
+        const data = await resp.json();
+        UI.log(`數據部署成功: ${data.nodes.length} 實體已就位`);
+        AppState.lastSyncNodeCount = data.nodes.length;
+
+        graphInstance = ForceGraph3D()(elem)
+            .graphData(data)
+            .nodeColor(node => node.color || '#3b82f6')
+            .nodeRelSize(5)
+            .nodeThreeObject(node => {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const label = node.id;
+                const fontSize = 48;
+                context.font = `bold ${fontSize}px Inter, Arial`;
+                const width = context.measureText(label).width;
+                canvas.width = width + 40;
+                canvas.height = fontSize + 40;
+                
+                // [視覺美化] 移除方塊背景，改用發光描邊文字
+                context.shadowColor = 'rgba(0, 0, 0, 1)';
+                context.shadowBlur = 10;
+                context.lineWidth = 6;
+                context.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+                context.strokeText(label, canvas.width / 2, canvas.height / 2);
+
+                context.fillStyle = '#ffffff';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(label, canvas.width / 2, canvas.height / 2);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.needsUpdate = true;
+                const material = new THREE.SpriteMaterial({ 
+                    map: texture,
+                    transparent: true,
+                    depthTest: false
+                });
+                const sprite = new THREE.Sprite(material);
+                sprite.scale.set(width / 10, (fontSize + 40) / 10, 1);
+                return sprite;
+            })
+            .nodeThreeObjectExtend(true)
+            .backgroundColor('#000000')
+            .onNodeClick(node => {
+                UI.log(`深度檢閱實體: ${node.id}`);
+                closeView('3d'); showView('wiki'); loadWikiPage(node.id + '.md');
+            });
+
+        graphInstance.d3Force('link').distance(60);
+        graphInstance.controls().autoRotate = true;
+    } catch (err) { UI.log('3D 引擎崩潰: ' + err.message, 'error'); }
+}
+
+async function sync3DGraph() {
+    if (!graphInstance) return;
+    UI.log('執行增量同步檢查...');
+    try {
+        const resp = await fetch('/api/graph_data?t=' + Date.now());
+        const data = await resp.json();
+        if (data.nodes.length !== AppState.lastSyncNodeCount) {
+            UI.log(`⚡ 偵測到知識爆炸！節點激增: ${data.nodes.length}`, 'info');
+            graphInstance.graphData(data);
+            AppState.lastSyncNodeCount = data.nodes.length;
+        }
+    } catch (err) { UI.log('實時同步失效', 'error'); }
+}
+
+function showView(v) {
+    AppState.currentView = v;
+    UI.log(`切換導航: ${v.toUpperCase()}`);
+    
+    // Hide all views including the new sync and manual views
+    ['view-dashboard', 'view-wiki', 'view-3d', 'view-sync', 'view-manual', 'view-devlog'].forEach(id => UI.hide(id));
+    
+    if (v === 'dashboard') { UI.show('view-dashboard'); }
+    else if (v === 'wiki') { UI.show('view-wiki'); loadWikiIndex(); }
+    else if (v === '3d') { UI.show('view-3d'); init3DGraph(); }
+    else if (v === 'sync') { UI.show('view-sync'); }
+    else if (v === 'manual') { UI.show('view-manual'); loadManual(); }
+    else if (v === 'devlog') { UI.show('view-devlog'); loadDevLog(); }
+}
+
+async function loadDevLog() {
+    UI.log('正在讀取系統進化與故障確效紀錄...');
+    try {
+        const resp = await fetch('/api/dev_log?t=' + Date.now());
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        const container = UI.get('devLogContent');
+        if (container) {
+            container.innerHTML = marked.parse(data.content || '目前尚無日誌');
+            UI.renderMath('devLogContent');
         }
     } catch (err) {
-        alert('系統錯誤: ' + err.message);
-        if (overlay) overlay.classList.add('hidden');
+        UI.log('日誌讀取失敗: ' + err.message, 'error');
     }
 }
 
-function runFullPipeline() {
-    runPipelineWithStream();
-}
-
-function runImportantFoldersIngest() {
-    const count = prompt('請輸入每個資料夾同步的郵件數量：', '100');
-    if (!count) return;
-    showLoading('同步中...');
-    fetch('/api/important_folders_ingest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ max_per_folder: parseInt(count) })
-    })
-    .then(r => r.json())
-    .then(data => {
-        alert('✅ 重要資料夾同步完成');
-        location.reload();
-    })
-    .catch(err => alert('同步失敗: ' + err.message))
-    .finally(hideLoading);
-}
-
-
-
-// Settings Logic
-function openSettings() {
-    console.log("⚙️ Launching AI Control Center");
-    const modal = document.getElementById('aiControlCenter');
-    const bg = document.getElementById('modalOverlayBg');
-    
-    if (modal) {
-        modal.classList.remove('hidden');
-        if (bg) bg.classList.remove('hidden');
+async function loadManual() {
+    UI.log('正在讀取系統操作手冊...');
+    try {
+        const resp = await fetch('/api/manual?t=' + Date.now());
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        const container = UI.get('manualContent');
+        if (container) {
+            container.innerHTML = marked.parse(data.content || '目前尚無手冊內容');
+            UI.renderMath('manualContent');
+        }
+    } catch (err) {
+        UI.log('手冊讀取失敗: ' + err.message, 'error');
     }
-
-    fetch('/api/ai_config')
-        .then(r => r.json())
-        .then(config => {
-            document.getElementById('settingProvider').value = config.provider || 'ollama';
-            if (config.google) {
-                document.getElementById('settingGeminiKey').value = config.google.api_key || '';
-                document.getElementById('settingGeminiModel').value = config.google.model || 'gemini-1.5-pro';
-            }
-            toggleSettingFields();
-        });
 }
 
-function closeSettings() {
-    const modal = document.getElementById('aiControlCenter');
-    const bg = document.getElementById('modalOverlayBg');
-    if (modal) modal.classList.add('hidden');
-    if (bg) bg.classList.add('hidden');
+function closeView(v) { showView('dashboard'); }
+
+async function loadRecentEmails() {
+    const resp = await fetch('/api/stats');
+    const data = await resp.json();
+    const container = UI.get('recentEmails');
+    if (!container || !data.recent_emails) return;
+    container.innerHTML = data.recent_emails.slice(0, 8).map(e => `
+        <div class="p-4 glass-panel hover:bg-white transition-all cursor-pointer">
+            <div class="text-xs font-bold truncate">${e.subject}</div>
+            <div class="text-[10px] text-slate-400 mt-2">${e.sender || '系統實體'}</div>
+        </div>
+    `).join('');
 }
-window.openAISettings = openSettings;
 
-
-function fetchOllamaModels(selectedModel) {
-    const modelEl = document.getElementById('settingOllamaModel');
-    modelEl.innerHTML = '<option value="">正在載入...</option>';
+async function askWiki() {
+    const q = UI.get('searchKeyword').value;
+    if (!q) return;
+    UI.log(`正在詢問 AI: ${q}...`);
+    UI.hide('dashboardInitial');
+    UI.show('inlineLoading');
+    UI.hide('wikiAnswer');
     
-    fetch('/api/ollama_models')
-        .then(r => r.json())
-        .then(data => {
-            if (data.models && data.models.length > 0) {
-                modelEl.innerHTML = data.models.map(m => 
-                    `<option value="${m.name}" ${m.name === selectedModel ? 'selected' : ''}>${m.name}</option>`
-                ).join('');
-            } else {
-                const errorMsg = data.error || '無可用模型 (請確認 Ollama 已啟動)';
-                modelEl.innerHTML = `<option value="">${errorMsg}</option>`;
-            }
-        })
-        .catch(err => {
-            modelEl.innerHTML = `<option value="">連線錯誤: ${err.message}</option>`;
+    try {
+        const resp = await fetch('/api/ask_wiki', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: q })
         });
+        const data = await resp.json();
+        UI.hide('inlineLoading');
+        UI.show('wikiAnswer');
+        UI.get('wikiAnswerContent').innerHTML = marked.parse(data.answer || 'AI 未能生成有效回覆');
+        UI.renderMath('wikiAnswerContent');
+        UI.log('AI 回覆已生成');
+    } catch (err) {
+        UI.log('AI 詢問失敗: ' + err.message, 'error');
+        resetDashboard();
+    }
 }
 
-function toggleSettingFields() {
-    const provider = document.getElementById('settingProvider').value;
-    document.getElementById('ollamaFields').classList.toggle('hidden', provider !== 'ollama');
-    document.getElementById('geminiFields').classList.toggle('hidden', provider !== 'google');
+function resetDashboard() {
+    UI.show('dashboardInitial');
+    UI.hide('wikiAnswer');
+    UI.hide('inlineLoading');
 }
 
-function saveSettings() {
-    const provider = document.getElementById('settingProvider').value;
+async function loadWikiPage(path) {
+    UI.log(`讀取知識頁面: ${path}`);
+    UI.hide('wikiGrid');
+    UI.show('wikiPageContainer');
+    UI.get('wikiActualContent').innerHTML = '<div class="animate-pulse text-slate-400">正在載入實體內容...</div>';
+    
+    try {
+        const resp = await fetch(`/api/wiki/page/${path}`);
+        const data = await resp.json();
+        
+        let htmlContent = marked.parse(data.content || '空文檔');
+        
+        // Dynamic On-Demand Synthesis Trigger
+        if (data.content && data.content.includes('即時總結')) {
+            const entityName = path.split('/').pop().replace('.md', '');
+            htmlContent += `
+                <div class="mt-12 p-8 bg-blue-50 border border-blue-100 rounded-3xl flex flex-col items-center justify-center gap-4 text-center shadow-inner">
+                    <i class="fas fa-microchip text-4xl text-blue-400 mb-2 drop-shadow-md"></i>
+                    <h4 class="text-blue-900 font-bold text-lg">啟動 AI 深度總結</h4>
+                    <p class="text-sm text-blue-600/80 max-w-md">目前僅顯示靜態萃取的骨架。點擊按鈕，呼叫 Local LLM 從數萬封原始郵件中即時還原此實體的技術脈絡與因果關係。</p>
+                    <button id="btnSynthesize" onclick="synthesizeEntity('${entityName}', '${path}')" class="btn-primary mt-2">
+                        <i class="fas fa-wand-magic-sparkles"></i> 立即合成
+                    </button>
+                </div>
+            `;
+        }
+        
+        UI.get('wikiActualContent').innerHTML = htmlContent;
+        UI.renderMath('wikiActualContent');
+    } catch (err) { UI.log('頁面讀取失敗: ' + err.message, 'error'); }
+}
+
+async function synthesizeEntity(entityName, path) {
+    const btn = document.getElementById('btnSynthesize');
+    const container = btn.parentElement;
+    
+    // Create Progress UI
+    container.innerHTML = `
+        <div class="w-full max-w-md space-y-4 animate-fade-in">
+            <div class="flex items-center justify-between text-blue-900 font-bold text-sm">
+                <span id="syncStatusText"><i class="fas fa-cog fa-spin mr-2"></i>正在深度還原中...</span>
+                <span id="syncTimer">00:00</span>
+            </div>
+            <div class="w-full bg-blue-100 h-3 rounded-full overflow-hidden shadow-inner">
+                <div id="syncProgressBar" class="bg-blue-600 h-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between items-center text-[10px] text-blue-400 font-bold tracking-widest uppercase">
+                <span>Phase: Semantic Mapping</span>
+                <span id="syncPercent">0%</span>
+            </div>
+        </div>
+    `;
+
+    let seconds = 0;
+    let progress = 0;
+    const startTime = Date.now();
+    
+    const timerInterval = setInterval(() => {
+        seconds++;
+        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        const timerEl = document.getElementById('syncTimer');
+        if (timerEl) timerEl.textContent = `${mins}:${secs}`;
+        
+        // Simulated progress logic: slow down as it gets closer to 95%
+        if (progress < 60) progress += Math.random() * 2;
+        else if (progress < 85) progress += Math.random() * 0.5;
+        else if (progress < 98) progress += Math.random() * 0.1;
+        
+        const bar = document.getElementById('syncProgressBar');
+        const perc = document.getElementById('syncPercent');
+        if (bar) bar.style.width = `${progress}%`;
+        if (perc) perc.textContent = `${Math.floor(progress)}%`;
+    }, 1000);
+    
+    try {
+        UI.log(`啟動 AI 深度合成任務: ${entityName}`);
+        const resp = await fetch('/api/wiki/synthesize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ entity_name: entityName, file_path: path })
+        });
+        
+        const data = await resp.json();
+        clearInterval(timerInterval);
+        
+        if (data.error) throw new Error(data.error);
+        
+        // Finalize progress
+        const bar = document.getElementById('syncProgressBar');
+        const perc = document.getElementById('syncPercent');
+        if (bar) bar.style.width = '100%';
+        if (perc) perc.textContent = '100%';
+        
+        UI.log(`合成任務完成，耗時 ${seconds} 秒`, 'success');
+        
+        setTimeout(() => {
+            loadWikiPage(path);
+        }, 800);
+        
+    } catch (err) {
+        clearInterval(timerInterval);
+        UI.log('合成失敗: ' + err.message, 'error');
+        container.innerHTML = `
+            <div class="text-rose-500 font-bold flex flex-col items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+                <span>合成中斷: ${err.message}</span>
+                <button onclick="loadWikiPage('${path}')" class="btn-primary mt-4 bg-slate-800">重試</button>
+            </div>
+        `;
+    }
+}
+
+function backToGrid() {
+    UI.show('wikiGrid');
+    UI.hide('wikiPageContainer');
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    UI.get('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    UI.log(`切換主題至: ${next.toUpperCase()}`);
+}
+
+async function saveSettings() {
     const config = {
-        provider: provider,
-        ollama: {
-            url: document.getElementById('settingOllamaUrl').value,
-            model: document.getElementById('settingOllamaModel').value,
-            timeout: 120
-        },
-        google: {
-            api_key: document.getElementById('settingGeminiKey').value,
-            model: document.getElementById('settingGeminiModel').value
+        provider: UI.get('settingProvider').value
+    };
+    try {
+        await fetch('/api/ai_config_update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        UI.log('配置已儲存，正在重新初始化...');
+        closeSettings();
+        location.reload();
+    } catch (err) { UI.log('配置儲存失敗', 'error'); }
+}
+
+function openSettings() { UI.show('settingsModal'); }
+function closeSettings() { UI.hide('settingsModal'); }
+
+async function runPipeline() {
+    const status = UI.get('pipelineStatus');
+    if (!status) return;
+    status.textContent = '🚀 正在初始化全自動同步程序...\n';
+    
+    const eventSource = new EventSource('/api/pipeline/stream');
+    eventSource.onmessage = (event) => {
+        if (event.data === 'heartbeat') return;
+        status.textContent += event.data;
+        status.scrollTop = status.scrollHeight;
+        if (event.data.includes('✅ 全流程執行成功')) {
+            eventSource.close();
+            UI.log('全自動同步完成', 'success');
+            loadDashboardStats();
         }
     };
-    
-    showLoading('儲存設定中...');
-    fetch('/api/ai_config_update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) alert('儲存失敗: ' + data.error);
-        else {
-            alert('✅ 設定已套用');
-            closeSettings();
-            location.reload();
-        }
-    })
-    .finally(hideLoading);
+    eventSource.onerror = (err) => {
+        status.textContent += '\n❌ 管道中斷，可能是因為本機未設置 Outlook 帳戶或網路問題。\n';
+        eventSource.close();
+        UI.log('管道執行失敗', 'error');
+    };
 }
 
-// Footer helper or other utils can go here
+async function stopPipeline() {
+    UI.log('正在嘗試終止後端進程...');
+    try {
+        const resp = await fetch('/api/pipeline/stop', { method: 'POST' });
+        const data = await resp.json();
+        if (data.success) {
+            UI.log('進程已強制終止', 'warning');
+            UI.get('pipelineStatus').textContent += '\n\n🛑 任務已被使用者手動終止。\n';
+        } else {
+            UI.log('目前無正在執行的進程', 'info');
+        }
+    } catch (err) {
+        UI.log('停止指令發送失敗: ' + err.message, 'error');
+    }
+}
+
+async function runBatchSynthesis() {
+    const status = UI.get('pipelineStatus');
+    if (!status) return;
+    status.textContent = '🚀 啟動 AI 批次合成任務...\n';
+    
+    const eventSource = new EventSource('/api/wiki/batch_synthesize');
+    eventSource.onmessage = (event) => {
+        status.textContent += event.data;
+        status.scrollTop = status.scrollHeight;
+        if (event.data.includes('🏁 批次合成任務結束')) {
+            eventSource.close();
+            UI.log('批次合成任務結束', 'success');
+        }
+    };
+    eventSource.onerror = (err) => {
+        status.textContent += '\n❌ 合成任務中斷。\n';
+        eventSource.close();
+    };
+}
+
+async function loadWikiIndex() {
+    UI.log('讀取技術百科分組索引...');
+    try {
+        const groupedData = await fetch('/api/entities').then(r => r.json());
+        const grid = UI.get('wikiGrid');
+        const sidebar = UI.get('wikiSidebar');
+        if (!grid || !sidebar) return;
+
+        grid.innerHTML = '';
+        sidebar.innerHTML = '';
+
+        Object.keys(groupedData).sort().forEach(dimension => {
+            const entities = groupedData[dimension];
+            
+            const sidebarSection = document.createElement('div');
+            sidebarSection.className = 'py-2';
+            sidebarSection.innerHTML = `
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 px-3">${dimension}</div>
+                <div class="space-y-1 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                    ${entities.slice(0, 50).map(e => `
+                        <div class="px-3 py-2 text-xs font-medium text-slate-600 hover:bg-white hover:text-blue-600 rounded-lg cursor-pointer transition-all truncate"
+                             onclick="loadWikiPage('${e.path}')">
+                            ${e.name}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            sidebar.appendChild(sidebarSection);
+
+            entities.forEach(e => {
+                const card = document.createElement('div');
+                card.className = 'p-6 glass-panel hover:border-blue-500 transition-all cursor-pointer group';
+                card.onclick = () => loadWikiPage(e.path);
+                card.innerHTML = `
+                    <div class="text-[10px] text-blue-500 font-bold mb-2 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                        ${dimension} ENTITY
+                    </div>
+                    <div class="font-bold text-slate-800 mb-2">${e.name}</div>
+                    <div class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">${e.description}</div>
+                `;
+                grid.appendChild(card);
+            });
+        });
+        
+        UI.log(`成功載入 ${Object.keys(groupedData).length} 個知識維度`);
+    } catch (err) {
+        UI.log('索引讀取失敗: ' + err.message, 'error');
+    }
+}

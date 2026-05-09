@@ -1,27 +1,27 @@
-# Skill: System Robustness & Maintenance (系統魯棒性維護)
+﻿# Skill: System Robustness & Maintenance (蝟餌絞擳舀??抒雁霅?
 
-## 1. 核心方針
-確保系統在面對網路波動、環境差異（Windows/Linux）以及代碼更新時，能保持高度的穩定性與一致性。
+## 1. ?詨??寥?
+蝣箔?蝟餌絞?券撠雯頝舀郭?憓榆?堆?Windows/Linux嚗誑?誨蝣潭?唳?嚗靽?擃漲?帘摰扯?銝?湔扼?
 
-## 2. 錯誤防禦規範 (Error Defense)
+## 2. ?航炊?脩戌閬? (Error Defense)
 
-### A. 雲端 API 韌性 (Cloud API Resilience)
-- **原則**：禁止單次請求失敗即中斷。
-- **實作**：必須對 `503 Service Unavailable` 與 `429 Too Many Requests` 實作自動重試機制。
-- **規範**：重試次數 ≥ 3 次，間隔應隨次數增加（Exponential Backoff）。
+### A. ?脩垢 API ??(Cloud API Resilience)
+- **??**嚗?甇Ｗ甈∟?瘙仃?銝剜??
+- **撖虫?**嚗??? `503 Service Unavailable` ??`429 Too Many Requests` 撖虫??芸??岫璈??
+- **閬?**嚗?閰行活????3 甈∴????甈⊥憓?嚗xponential Backoff嚗?
 
-### B. 環境編碼相容性 (Encoding Compatibility)
-- **原則**：確保在 Windows (CP950) 環境下不因特殊符號崩潰。
-- **實作**：在 Python 的 `print` 或 `logging` 中避免使用非標準 Unicode 圖示（如 Emoji），或在程式入口處強制設定 `sys.stdout` 的編碼為 `utf-8`。
+### B. ?啣?蝺函Ⅳ?詨捆??(Encoding Compatibility)
+- **??**嚗Ⅱ靽 Windows (CP950) ?啣?銝??畾泵?援瞏啜?
+- **撖虫?**嚗 Python ??`print` ??`logging` 銝剝?蝙?券?璅? Unicode ?內嚗? Emoji嚗??蝔??亙?撥?嗉身摰?`sys.stdout` ?楊蝣潛 `utf-8`??
 
-## 3. 開發維護 SOP (DevOps SOP)
+## 3. ?蝬剛風 SOP (DevOps SOP)
 
-### A. 後端同步更新 (Backend Sync)
-- **動作**：每當修改 `web_app.py`, `email_analyzer.py` 或 `outlook_ingestor.py` 等核心邏輯後，**必須重啟 Flask 伺服器**。
-- **目的**：防止伺服器記憶體中殘留舊版邏輯，導致「代碼已改但結果未變」的假性 Bug。
+### A. 敺垢?郊?湔 (Backend Sync)
+- **??**嚗??嗡耨??`web_app.py`, `email_analyzer.py` ??`outlook_ingestor.py` 蝑敹?頛臬?嚗?*敹??? Flask 隡箸???*??
+- **?桃?**嚗甇Ｖ撩?閮擃葉畾????摩嚗??氬誨蝣澆歇?嫣?蝯??芾?????Bug??
 
-### B. RAG 搜尋品質 (Search Quality)
-- 遵循 `rag_chinese_fix.md` 規範，對中文搜尋進行子字串包含檢索，而非完全匹配。
+### B. RAG ???釭 (Search Quality)
+- ?萄儐 `rag_chinese_fix.md` 閬?嚗?銝剜????脰?摮?銝脣??急炎蝝ｇ???摰?寥???
 
 ---
-*Created by Antigravity - 確保系統永不當機的最後防線*
+*Created by Antigravity - 蝣箔?蝟餌絞瘞訾??嗆???敺蝺?

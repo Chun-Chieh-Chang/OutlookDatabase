@@ -1,0 +1,117 @@
+{
+  "missing_entities": [
+    {
+      "name": "R1-10134",
+      "frequency": 523
+    },
+    {
+      "name": "R1-10149",
+      "frequency": 473
+    },
+    {
+      "name": "R1-15784",
+      "frequency": 431
+    },
+    {
+      "name": "R1-15853",
+      "frequency": 351
+    },
+    {
+      "name": "R1-15198",
+      "frequency": 310
+    },
+    {
+      "name": "R1-15456",
+      "frequency": 308
+    },
+    {
+      "name": "M41459",
+      "frequency": 241
+    },
+    {
+      "name": "R1-15460",
+      "frequency": 222
+    },
+    {
+      "name": "X17020",
+      "frequency": 180
+    },
+    {
+      "name": "R1-15457",
+      "frequency": 179
+    },
+    {
+      "name": "R1-15458",
+      "frequency": 179
+    },
+    {
+      "name": "V1-10562",
+      "frequency": 177
+    },
+    {
+      "name": "R1-15200",
+      "frequency": 168
+    },
+    {
+      "name": "R1-15936",
+      "frequency": 157
+    },
+    {
+      "name": "V1-10000",
+      "frequency": 134
+    },
+    {
+      "name": "X3299AAM",
+      "frequency": 114
+    },
+    {
+      "name": "V1-10667",
+      "frequency": 112
+    },
+    {
+      "name": "R1-10356",
+      "frequency": 109
+    },
+    {
+      "name": "R1-15737",
+      "frequency": 100
+    },
+    {
+      "name": "M06002",
+      "frequency": 94
+    }
+  ],
+  "non_compliant_nodes": [
+    {
+      "node": "aoi機台.md",
+      "category": "pqc",
+      "reason": "Missing patterns: ['FAI', '首件']"
+    },
+    {
+      "node": "deviation_investigation.md",
+      "category": "nca",
+      "reason": "Missing patterns: ['Anomaly', 'Sorting']"
+    },
+    {
+      "node": "面談.md",
+      "category": "nca",
+      "reason": "Missing patterns: ['Anomaly', '異常']"
+    },
+    {
+      "node": "cleanroom_inspection.md",
+      "category": "msa",
+      "reason": "Missing patterns: ['Calibration', '校正']"
+    },
+    {
+      "node": "fai.md",
+      "category": "msa",
+      "reason": "Missing patterns: ['Calibration', '校正']"
+    },
+    {
+      "node": "平坦度量測.md",
+      "category": "msa",
+      "reason": "Missing patterns: ['Calibration', '校正']"
+    }
+  ],
+  "linkage_gaps": []
+}

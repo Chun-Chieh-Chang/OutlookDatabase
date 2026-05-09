@@ -1,200 +1,336 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook AI 知識庫 | SkillsBuilder Lite</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-        window.DB_EXISTS = {{ db_exists_js|safe }};
-    </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <title>SkillsBuilder AI | Outlook 知識門戶</title>
+    <!-- Premium UI Standard -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v={{ v }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/glass.css') }}?v={{ v }}">
+    <!-- Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
-            --max-width: 1000px;
+            --bg-base: #F9FAFB;
+            --surface: #FFFFFF;
+            --primary-text: #111827;
+            --secondary-text: #6B7280;
+            --accent: #3B82F6;
+            --border: #E5E7EB;
         }
-        .app-container {
-            display: block; /* Remove grid sidebar for simplicity */
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: var(--space-8) var(--space-4);
+        [data-theme='dark'] {
+            --bg-base: #0F172A;
+            --surface: #1E293B;
+            --primary-text: #F1F5F9;
+            --secondary-text: #94A3B8;
+            --accent: #60A5FA;
+            --border: #334155;
         }
-        .main-content {
-            padding: 0;
-        }
-        .hero-section {
-            text-align: center;
-            margin-bottom: var(--space-12);
-        }
-        .action-card {
-            background: linear-gradient(135deg, var(--brand-accent), #2563eb);
-            color: white;
-            padding: var(--space-8);
-            border-radius: var(--radius-2xl);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: var(--space-8);
-            box-shadow: var(--shadow-lg);
-        }
-        .action-info h2 { font-size: 1.5rem; margin-bottom: var(--space-1); }
-        .action-info p { opacity: 0.9; font-size: 0.9rem; }
+        body { background-color: var(--bg-base); color: var(--primary-text); transition: all 0.3s ease; font-family: 'Inter', system-ui, -apple-system, sans-serif; overflow: hidden; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 24px; }
+        [data-theme='dark'] .glass-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .btn-primary { background: var(--accent); color: white; padding: 10px 20px; border-radius: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); }
+        .nav-item { padding: 12px; border-radius: 12px; color: var(--secondary-text); transition: all 0.2s; cursor: pointer; }
+        .nav-item:hover { background: var(--border); color: var(--primary-text); }
+        .nav-item.active { background: var(--accent); color: white; }
         
-        .search-container {
-            background: var(--bg-surface);
-            border-radius: var(--radius-2xl);
-            padding: var(--space-2);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-subtle);
-            display: flex;
-            gap: var(--space-2);
-            margin-bottom: var(--space-8);
-        }
-        .search-input {
-            flex: 1;
-            border: none;
-            padding: var(--space-4) var(--space-6);
-            font-size: 1.1rem;
-            outline: none;
-            background: transparent;
-            color: var(--text-primary);
-        }
-        .search-btn {
-            background: var(--brand-accent);
+        /* Premium Tooltip */
+        [data-tooltip] { position: relative; }
+        [data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+            background: #1e293b;
             color: white;
-            border: none;
-            padding: 0 var(--space-8);
-            border-radius: var(--radius-xl);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
         }
-        .search-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-
-        .stats-strip {
-            display: flex;
-            gap: var(--space-8);
-            margin-bottom: var(--space-12);
-            justify-content: center;
-        }
-        .stat-item { display: flex; align-items: center; gap: var(--space-2); color: var(--text-secondary); font-size: 0.9rem; }
-        .stat-item i { color: var(--brand-accent); }
-        .stat-item b { color: var(--text-primary); }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: var(--space-8);
-        }
-        @media (max-width: 850px) {
-            .results-grid { grid-template-columns: 1fr; }
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) translateX(20px);
         }
     </style>
 </head>
-<body>
-    <div class="app-container">
-        <!-- Hero - 標題與統計 -->
-        <header class="hero-section">
-            <h1 class="text-4xl font-black mb-4">Outlook AI 知識助手</h1>
-            <div class="stats-strip">
-                <div class="stat-item"><i class="fas fa-database"></i> 郵件總數: <b id="totalEmails">-</b></div>
-                <div class="stat-item"><i class="fas fa-robot"></i> AI 狀態: <b id="aiStatus">檢查中...</b></div>
-                <div class="stat-item"><i class="fas fa-clock"></i> 最後更新: <b id="lastUpdate">剛剛</b></div>
+<body class="h-screen w-screen flex">
+    <!-- [V3.1] STATUS TICKER - ROOT LEVEL -->
+    <div id="status-ticker" class="fixed bottom-8 right-8 z-[9999] w-72 p-5 bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none">
+        <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+            System Live Pulse
+        </div>
+        <div id="ticker-content" class="space-y-2">
+            <!-- Messages will appear here -->
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="w-20 border-r border-border flex flex-col items-center py-8 gap-8 z-50 bg-surface">
+        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+            <i class="fas fa-brain text-xl"></i>
+        </div>
+        <div class="flex flex-col gap-4 flex-1">
+            <div class="nav-item" onclick="showView('dashboard')" data-tooltip="數據分析儀表板"><i class="fas fa-chart-pie"></i></div>
+            <div class="nav-item" onclick="showView('sync')" data-tooltip="數據匯入與管道同步"><i class="fas fa-sync-alt"></i></div>
+            <div class="nav-item" onclick="showView('wiki')" data-tooltip="知識管理 Wiki"><i class="fas fa-book-open"></i></div>
+            <div class="nav-item" onclick="showView('3d')" data-tooltip="知識圖譜 3D 可視化"><i class="fas fa-project-diagram"></i></div>
+            <div class="nav-item" onclick="showView('manual')" data-tooltip="系統操作手冊與進化定義"><i class="fas fa-question-circle"></i></div>
+            <div class="nav-item" onclick="showView('devlog')" data-tooltip="系統開發日誌"><i class="fas fa-clipboard-list"></i></div>
+        </div>
+        <div class="nav-item" onclick="toggleTheme()" data-tooltip="切換深淺模式"><i id="themeIcon" class="fas fa-moon"></i></div>
+        <div class="nav-item" onclick="openSettings()" data-tooltip="系統核心配置"><i class="fas fa-cog"></i></div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+        <!-- Top Bar -->
+        <header class="h-20 border-b border-border flex items-center justify-between px-10 bg-white/50 backdrop-blur-md">
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold tracking-tight">SkillsBuilder <span class="text-blue-600">AI</span></h1>
+                <div class="h-6 w-[1px] bg-border"></div>
+                <div id="aiStatusPill" class="ai-status-pill px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-bold flex items-center gap-2 transition-colors">
+                    <span id="aiStatusDot" class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                    <span id="aiStatusText">CHECKING OLLAMA...</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchKeyword" placeholder="搜尋工業知識、料號或異常代碼..." 
+                           class="w-96 bg-slate-100 border-none rounded-2xl py-3 pl-12 pr-6 text-sm focus:ring-2 focus:ring-blue-500 transition-all">
+                </div>
+                <button onclick="askWiki()" class="btn-primary">詢問 AI</button>
             </div>
         </header>
 
-        <!-- Main Action - 一鍵同步 -->
-        <div class="action-card animate-fade-in">
-            <div class="action-info">
-                <h2>同步並更新知識庫</h2>
-                <p>提取 Outlook 郵件、附件並透過 AI 重建知識圖譜</p>
-            </div>
-            <button class="btn btn-lg bg-white text-blue-600 hover:bg-gray-50 px-8 py-4 rounded-2xl font-bold shadow-sm" onclick="runFullPipeline()">
-                <i class="fas fa-sync-alt mr-2"></i> 開始全量更新
-            </button>
-        </div>
-
-        <!-- Search Area - 智慧搜尋與問答 -->
-        <div class="search-container animate-fade-in">
-            <input type="text" id="searchKeyword" class="search-input" placeholder="問問題或搜尋郵件內容...">
-            <button class="search-btn" onclick="askWiki()">
-                <i class="fas fa-paper-plane mr-2"></i> 提問 / 搜尋
-            </button>
-        </div>
-
-        <!-- Content Area - 結果顯示 -->
-        <div class="results-grid">
-            <!-- Left: Answers & Search Results -->
-            <div class="space-y-6">
-                <div id="wikiAnswer" class="hidden animate-fade-in p-8 bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-xl prose dark:prose-invert max-w-none">
-                    <!-- AI Answer goes here -->
+        <!-- Dashboard View -->
+        <section id="view-dashboard" class="p-10 overflow-y-auto flex-1">
+            <div id="dashboardInitial" class="space-y-10">
+                <div class="grid grid-cols-4 gap-8">
+                    <div class="glass-panel p-8">
+                        <div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Total Emails</div>
+                        <div id="dashTotalMails" class="text-4xl font-black text-slate-800">0</div>
+                    </div>
+                    <div class="glass-panel p-8">
+                        <div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Tech Entities</div>
+                        <div id="dashEntityCount" class="text-4xl font-black text-blue-600 transition-all duration-500">0</div>
+                    </div>
+                    <div class="glass-panel p-8">
+                        <div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Evolution Score</div>
+                        <div id="dashEvolutionScore" class="text-4xl font-black text-emerald-500">0</div>
+                        <div id="dashEvolutionStatus" class="text-[10px] font-bold text-slate-400 mt-2">CALCULATING...</div>
+                    </div>
+                    <div class="glass-panel p-8">
+                        <div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Active Senders</div>
+                        <div id="dashSenderCount" class="text-4xl font-black text-slate-800">0</div>
+                    </div>
                 </div>
-                
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 flex items-center gap-2">
-                        <i class="fas fa-search text-blue-500"></i> 相關郵件內容
-                    </h3>
-                    <div id="searchResults" class="space-y-4">
-                        <p class="text-gray-400 text-center py-8">輸入關鍵字開始檢索...</p>
+
+                <div class="grid grid-cols-3 gap-10">
+                    <div class="col-span-2 space-y-6">
+                        <h3 class="text-lg font-bold">近期挖掘動態</h3>
+                        <div id="recentEmails" class="grid grid-cols-2 gap-4">
+                            <!-- Injected by main.js -->
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-bold">快速行動</h3>
+                        <div class="flex flex-col gap-3">
+                            <button class="w-full p-4 bg-white border border-slate-100 rounded-2xl text-left hover:bg-blue-50 hover:border-blue-200 transition-all group" onclick="showView('3d')">
+                                <div class="font-bold text-sm mb-1">開啟 3D 知識圖譜</div>
+                                <div class="text-xs text-slate-500">視覺化觀察工業實體間的因果連結</div>
+                            </button>
+                            <button class="w-full p-4 bg-white border border-slate-100 rounded-2xl text-left hover:bg-emerald-50 hover:border-emerald-200 transition-all" onclick="showView('wiki')">
+                                <div class="font-bold text-sm mb-1">瀏覽技術百科</div>
+                                <div class="text-xs text-slate-500">查閱已結構化的零件規格與 CAPA</div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Context & Quick Actions -->
-            <div class="space-y-6">
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4">快速工具</h3>
-                    <div class="grid grid-cols-1 gap-2">
-                        <button onclick="analyzeEmailInsights()" class="nav-action text-sm">
-                            <i class="fas fa-chart-line"></i> 產生分析報告
-                        </button>
-                        <button onclick="showView('wiki')" class="nav-action text-sm">
-                            <i class="fas fa-project-diagram"></i> 瀏覽知識圖譜
-                        </button>
-                        <button onclick="exportData()" class="nav-action text-sm">
-                            <i class="fas fa-download"></i> 匯出 CSV
-                        </button>
-                        <button onclick="clearAndRebuild()" class="nav-action text-sm text-red-500">
-                            <i class="fas fa-trash"></i> 重置資料庫
-                        </button>
+            <!-- AI Answer View -->
+            <div id="wikiAnswer" class="hidden max-w-4xl mx-auto space-y-8 animate-up">
+                <div class="p-10 glass-panel shadow-2xl bg-white/80 border-blue-100">
+                    <div class="flex items-center gap-3 mb-6 text-blue-600 font-bold">
+                        <i class="fas fa-wand-magic-sparkles"></i> AI 深度合成回覆
                     </div>
+                    <div id="wikiAnswerContent" class="prose prose-slate max-w-none"></div>
                 </div>
-
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4">最近提取</h3>
-                    <div id="recentEmails" class="space-y-3 text-sm">
-                        <!-- Recent list -->
-                    </div>
+                <div id="searchResultsCard" class="hidden p-8 bg-white/50 rounded-3xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-6">相關原始郵件</h4>
+                    <div id="searchResults" class="space-y-3"></div>
                 </div>
+                <button onclick="resetDashboard()" class="text-sm font-bold text-slate-400 hover:text-blue-600"><i class="fas fa-arrow-left mr-2"></i> 返回儀表板</button>
             </div>
-        </div>
 
-        <!-- Wiki Modal (hidden by default) -->
-        <div id="view-wiki" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-8">
-            <div class="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
-                <div class="p-6 border-b flex justify-between items-center">
-                    <h2 class="text-xl font-bold">知識圖譜瀏覽器</h2>
-                    <button class="p-2 hover:bg-gray-100 rounded-full" onclick="document.getElementById('view-wiki').classList.add('hidden')">
-                        <i class="fas fa-times"></i>
+            <div id="inlineLoading" class="hidden py-20 text-center animate-pulse">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <div class="text-slate-400 font-bold">正在深度合成工業洞察...</div>
+            </div>
+        </section>
+
+        <!-- Wiki View -->
+        <section id="view-wiki" class="hidden h-full flex overflow-hidden">
+            <aside class="w-72 border-r border-border p-8 overflow-y-auto">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">知識分組</h3>
+                <div id="wikiSidebar" class="flex flex-col gap-2"></div>
+            </aside>
+            <div class="flex-1 overflow-y-auto p-12 bg-slate-50/30">
+                <div id="wikiGrid" class="grid grid-cols-3 gap-6"></div>
+                <div id="wikiPageContainer" class="hidden max-w-3xl mx-auto">
+                    <button onclick="backToGrid()" class="mb-10 text-slate-400 hover:text-blue-600 font-bold flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> 返回索引
                     </button>
-                </div>
-                <div class="flex-1 overflow-hidden flex">
-                    <div id="wikiIndex" class="w-64 border-r p-4 overflow-y-auto bg-gray-50 dark:bg-slate-800"></div>
-                    <div id="wikiContent" class="flex-1 p-8 overflow-y-auto prose dark:prose-invert max-w-none"></div>
+                    <div id="wikiActualContent" class="glass-panel p-12 bg-white shadow-2xl"></div>
                 </div>
             </div>
+        </section>
+
+        <!-- 3D View -->
+        <section id="view-3d" class="hidden absolute inset-0 z-40 bg-black">
+            <button onclick="closeView('3d')" class="fixed top-8 left-8 z-50 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl text-white text-xs font-bold flex items-center gap-3 transition-all border border-white/10">
+                <i class="fas fa-arrow-left"></i> 退出 3D 空間
+            </button>
+            <div id="3d-graph" class="w-full h-full"></div>
+        </section>
+        
+        <!-- Sync View -->
+        <section id="view-sync" class="hidden flex-1 p-10 overflow-y-auto bg-slate-50">
+            <div class="max-w-3xl mx-auto space-y-8">
+                <header class="mb-10">
+                    <h2 class="text-2xl font-bold text-slate-800"><i class="fas fa-sync-alt mr-3 text-blue-600"></i>工業知識生產管道 (Production Pipeline)</h2>
+                    <p class="text-slate-500 text-sm mt-2">請依照順序執行以下步驟，將原始郵件轉化為結構化工業知識。</p>
+                </header>
+
+                <div class="space-y-6">
+                    <!-- Step 1: Ingest -->
+                    <div class="glass-panel p-8 bg-white flex items-center gap-8 border-l-4 border-blue-500">
+                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-bold">01</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-800">數據匯入 (Email Ingestion)</h3>
+                            <p class="text-xs text-slate-500 mt-1">從 Outlook 提取最新郵件並同步至本地資料庫。</p>
+                        </div>
+                        <button onclick="runPipeline()" class="btn-primary"><i class="fas fa-download"></i> 開始同步</button>
+                    </div>
+
+                    <!-- Step 2: Extract & Structure -->
+                    <div class="glass-panel p-8 bg-white flex items-center gap-8 border-l-4 border-slate-200">
+                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 font-bold">02</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-800">結構化提取 (Knowledge Mapping)</h3>
+                            <p class="text-xs text-slate-500 mt-1">執行多維度語意特徵提取，建構跨領域知識庫骨架 (HR, PQC, QMS...)。</p>
+                        </div>
+                        <button onclick="runPipeline()" class="p-3 px-6 rounded-xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed">等待前置任務</button>
+                    </div>
+
+                    <!-- Step 3: AI Batch Synthesis -->
+                    <div class="glass-panel p-8 bg-white flex items-center gap-8 border-l-4 border-emerald-500">
+                        <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 font-bold">03</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-800">AI 批次深度合成 (Deep Synthesis)</h3>
+                            <p class="text-xs text-slate-500 mt-1">呼叫 Local LLM 對所有實體進行工業級語意總結。</p>
+                        </div>
+                        <button onclick="runBatchSynthesis()" class="p-3 px-6 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all flex items-center gap-2">
+                            <i class="fas fa-microchip"></i> 啟動合成
+                        </button>
+                    </div>
+
+                    <!-- Pipeline Console -->
+                    <div class="glass-panel bg-slate-900 shadow-2xl overflow-hidden mt-10">
+                        <div class="bg-slate-800 px-6 py-3 border-b border-white/5 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pipeline Console Output</span>
+                                <button onclick="stopPipeline()" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[9px] font-bold hover:bg-rose-500/40 transition-all border border-rose-500/30">
+                                    <i class="fas fa-stop-circle mr-1"></i> 強制終止
+                                </button>
+                            </div>
+                            <div class="flex gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-rose-500/50"></span>
+                                <span class="w-2 h-2 rounded-full bg-amber-500/50"></span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-500/50"></span>
+                            </div>
+                        </div>
+                        <div id="pipelineStatus" class="p-8 h-64 overflow-y-auto text-[11px] font-mono text-emerald-400/90 whitespace-pre-wrap leading-relaxed">等待指令中...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dev Log View -->
+        <section id="view-devlog" class="hidden flex-1 p-10 overflow-y-auto bg-slate-50">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800"><i class="fas fa-clipboard-list mr-3 text-blue-600"></i>系統進化與故障確效紀錄 (PDCA / CAPA)</h2>
+                    <button onclick="loadDevLog()" class="btn-primary text-sm"><i class="fas fa-sync-alt"></i> 重新載入</button>
+                </div>
+                <div id="devLogContent" class="glass-panel p-10 prose prose-slate max-w-none bg-white shadow-xl">
+                    <div class="animate-pulse text-slate-400">正在載入日誌...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Manual View -->
+        <section id="view-manual" class="hidden flex-1 p-10 overflow-y-auto bg-slate-50">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800"><i class="fas fa-question-circle mr-3 text-blue-600"></i>系統操作手冊與進化定義</h2>
+                    <button onclick="loadManual()" class="btn-primary text-sm"><i class="fas fa-sync-alt"></i> 重新載入</button>
+                </div>
+                <div id="manualContent" class="glass-panel p-10 prose prose-slate max-w-none bg-white shadow-xl">
+                    <div class="animate-pulse text-slate-400">正在載入說明文件...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeSettings()"></div>
+        <div class="glass-panel w-full max-w-xl relative overflow-hidden flex flex-col bg-white shadow-3xl">
+            <header class="p-8 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="text-xl font-bold">系統核心配置</h2>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            </header>
+            <div class="p-8 space-y-6">
+                <div class="input-group">
+                    <label class="input-label">AI 供應商</label>
+                    <select id="settingProvider" class="custom-input">
+                        <option value="ollama">Local Ollama (本機隱私模式)</option>
+                    </select>
+                </div>
+            </div>
+            <footer class="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
+                <button onclick="closeSettings()" class="flex-1 p-4 rounded-2xl bg-white border border-slate-200 font-bold">取消</button>
+                <button onclick="saveSettings()" class="flex-1 p-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-200">儲存配置</button>
+            </footer>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-[100]">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl p-10 text-center shadow-2xl">
-            <div class="loading-spinner mx-auto mb-6"></div>
-            <p id="loadingMessage" class="text-xl font-bold">全量同步中，請稍候...</p>
-            <p class="text-gray-500 mt-2">系統正在處理 Outlook 資料與建構索引</p>
-        </div>
-    </div>
+    <!-- Scripts -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/3d-force-graph@1.73.0/dist/3d-force-graph.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/marked.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v={{ v }}" defer></script>
+    <script>
+        window.DB_EXISTS = {{ db_exists_js|safe }};
+        function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+    </script>
 </body>
 </html>

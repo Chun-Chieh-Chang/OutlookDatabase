@@ -1,0 +1,30 @@
+{
+  "version": "3.0",
+  "name": "SkillsBuilder QC-Centric Ontology",
+  "description": "Professional quality control framework focusing on defense lifecycle and technical compliance.",
+  "categories": {
+    "iqc": "Incoming Quality Control: Suppliers, material specs, receiving inspections, raw materials.",
+    "pqc": "In-Process Quality Control: Mold/machine parameters, hourly inspections, FAI, production records.",
+    "oqc": "Outgoing Quality Control: Shipment reports, COA/COC, packaging, customer delivery.",
+    "capa": "Corrective and Preventive Action: Complaints, 8D reports, root causes, improvements.",
+    "nca": "Non-Conformance Action: Anomalies, sorting records, rework, MRB decisions.",
+    "spec": "Technical Specifications: Drawings, CTQ dimensions, tolerances, standards.",
+    "msa": "Metrology & MSA: Calibration, Gage R&R, measurement equipment, stability.",
+    "qms": "Quality Management System: ISO, SOPs, internal audits, document control.",
+    "project": "Specific Project/Product codes linking all QC activities.",
+    "man": "Stakeholders: QC engineers, vendors, customer contact points."
+  },
+  "lifecycle": ["plan", "do", "check", "act"],
+  "improvement": ["none", "problem", "rootcause", "correction", "prevention", "capa", "nca"],
+  "urgency": ["critical", "high", "normal", "low"],
+  "keywords": ["CAPA", "NCA", "客訴", "異常", "量測", "規格", "圖號", "料號", "SIP", "FAI", "CPK"],
+  "relationships": [
+    "validates",
+    "corrects",
+    "references",
+    "produces",
+    "inspects",
+    "belongs_to",
+    "causes"
+  ]
+}

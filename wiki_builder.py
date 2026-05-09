@@ -24,6 +24,8 @@ if sys.platform == "win32":
 # Paths
 RAW_DIR = 'raw/emails'
 WIKI_DIR = 'wiki'
+SCHEMA_DIR = 'schema'
+ONTOLOGY_FILE = os.path.join(SCHEMA_DIR, 'ontology.json')
 DIMENSIONS_DIR = os.path.join(WIKI_DIR, 'dimensions')
 LIFECYCLE_DIR = os.path.join(WIKI_DIR, 'lifecycle')
 IMPROVEMENT_DIR = os.path.join(WIKI_DIR, 'improvement')
@@ -38,7 +40,16 @@ LOG_FILE = os.path.join(WIKI_DIR, 'log.md')
 ALIAS_REGISTRY_FILE = os.path.join(WIKI_DIR, '.alias_registry.json')
 GRAPH_STORE_FILE = os.path.join(WIKI_DIR, 'graph_store.json')
 
-# Sub-dimensions mapping (4M1E)
+# Load Ontology Schema
+def load_ontology():
+    if os.path.exists(ONTOLOGY_FILE):
+        with open(ONTOLOGY_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+ONTOLOGY = load_ontology()
+
+# Multi-dimensional Semantic Mapping (HR, PQC, QMS, 4M1E...) - Dynamic fallback
 DIM_MAP = {
     'man': 'man',
     'machine': 'machine',
@@ -46,6 +57,8 @@ DIM_MAP = {
     'method': 'method',
     'env': 'environment',
     'measure': 'measurement',
+    'hr': 'hr',
+    'admin': 'admin',
     'event': 'events',
     'others': 'others'
 }
@@ -182,7 +195,7 @@ def sanitize_filename(name):
         safe = 'unnamed'
     return f"{safe}.md"
 
-def update_wiki_page_v2(directory, canonical_name, dim_data, source_email):
+def update_wiki_page_v2(directory, canonical_name, dim_data, source_email, analyzer=None):
     """Create or update a wiki page with YAML frontmatter (Obsidian-style).
     
     Args:
@@ -190,6 +203,7 @@ def update_wiki_page_v2(directory, canonical_name, dim_data, source_email):
         canonical_name: Resolved canonical entity name
         dim_data: Full dimension dict from LLM (with aliases, tags, etc.)
         source_email: Source reference string
+        analyzer: Optional EmailAnalyzer for synthesis
     """
     filename = sanitize_filename(canonical_name)
     filepath = os.path.join(directory, filename)
@@ -205,7 +219,29 @@ def update_wiki_page_v2(directory, canonical_name, dim_data, source_email):
     relationships = dim_data.get('relationships', [])
     
     if os.path.exists(filepath):
-        # Append mode: add new record + supplemental info
+        if analyzer:
+            # Synthesis Mode: AI merges new info into existing content
+            with open(filepath, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+            
+            new_evidence = f"Category: {category}\nDescription: {description}\n"
+            if relationships:
+                new_evidence += "Relationships: " + ", ".join([f"[[{r['target']}]] ({r['type']})" for r in relationships if r.get('target')])
+            
+            synthesized = analyzer.synthesize_wiki_page(existing_content, new_evidence, source_email)
+            
+            if synthesized and "---" in synthesized:
+                # Clean up markdown code blocks if any
+                synthesized = synthesized.strip()
+                if synthesized.startswith('```'):
+                    synthesized = re.sub(r'^```(?:markdown)?\s*', '', synthesized)
+                    synthesized = re.sub(r'\s*```$', '', synthesized)
+                
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(synthesized)
+                return filename
+
+        # Fallback to Append mode if no analyzer or synthesis failed
         with open(filepath, 'a', encoding='utf-8') as f:
             f.write(f"\n\n### Record (Source: {source_email})\n")
             if description:
@@ -343,22 +379,39 @@ def build_wiki():
         if len(new_emails) >= limit:
             break
             
-        with open(email_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        if data['entry_id'] not in processed_emails:
-            new_emails.append((email_file, data))
+    print(f"🔍 正在掃描本地原始數據目錄: {RAW_DIR} ...", flush=True)
+    all_emails = glob.glob(os.path.join(RAW_DIR, '*.json'))
+    print(f"📊 發現共 {len(all_emails)} 封原始郵件，正在進行增量同步檢查...", flush=True)
     
-    print(f"Targeting {len(new_emails)} emails for this session (Limit: {limit}).")
+    new_emails = []
+    for email_file in all_emails:
+        if len(new_emails) >= limit:
+            break
+            
+        # Robustness: Skip empty or corrupt files
+        if os.path.getsize(email_file) == 0:
+            continue
+
+        try:
+            # Check if processed without reading the whole file first for speed
+            eid = os.path.basename(email_file).replace('.json', '')
+            if eid not in processed_emails:
+                with open(email_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                new_emails.append((email_file, data))
+        except:
+            continue
     
     if not new_emails:
-        print("No new emails found. Wiki is up to date.")
+        print("✅ 確效完成：所有本地資料已結構化，無需重複建構。", flush=True)
         return
+        
+    print(f"🚀 偵測到 {len(new_emails)} 封新郵件待提取，開始知識映射程序...", flush=True)
     
     session_stats = {"processed": 0, "entities": 0, "edges": 0, "errors": 0}
     
     for email_file, data in new_emails:
-        print(f"Analyzing: {data['subject']}")
+        print(f"  > 正在分析: {data['subject']} ...", flush=True)
         try:
             analysis = analyzer.extract_wiki_entities(data['subject'], data['body'])
             
@@ -385,17 +438,17 @@ def build_wiki():
                         target_dir = os.path.join(DIMENSIONS_DIR, 'events')
                     
                     # ═══ Step 3: Write Wiki Page (v2 with frontmatter) ═══
-                    wiki_filename = update_wiki_page_v2(target_dir, canonical_name, dim, source_ref)
+                    wiki_filename = update_wiki_page_v2(target_dir, canonical_name, dim, source_ref, analyzer=analyzer)
                     
                     # ═══ Step 4: Cross-link to Lifecycle View (PDCA) ═══
                     lc = dim.get('lifecycle', 'none').lower()
                     if lc in ['plan', 'do', 'check', 'act']:
-                        update_wiki_page_v2(os.path.join(LIFECYCLE_DIR, lc), canonical_name, dim, source_ref)
+                        update_wiki_page_v2(os.path.join(LIFECYCLE_DIR, lc), canonical_name, dim, source_ref, analyzer=analyzer)
                         
                     # ═══ Step 5: Cross-link to Improvement View (CAPA) ═══
                     imp = dim.get('improvement', 'none').lower()
                     if imp in ['problem', 'rootcause', 'correction', 'prevention']:
-                        update_wiki_page_v2(os.path.join(IMPROVEMENT_DIR, imp), canonical_name, dim, source_ref)
+                        update_wiki_page_v2(os.path.join(IMPROVEMENT_DIR, imp), canonical_name, dim, source_ref, analyzer=analyzer)
                     
                     # ═══ Step 6: Update Graph Store ═══
                     rel_file = os.path.relpath(os.path.join(target_dir, wiki_filename), WIKI_DIR)
@@ -425,16 +478,16 @@ def build_wiki():
     save_alias_registry(alias_registry)
     save_graph_store(graph_store)
     
-    print(f"\n{'='*50}")
-    print(f"Session Complete:")
-    print(f"  Emails Processed: {session_stats['processed']}")
-    print(f"  Entities Created/Updated: {session_stats['entities']}")
-    print(f"  Edges Added: {session_stats['edges']}")
-    print(f"  Errors: {session_stats['errors']}")
-    print(f"  Alias Registry Size: {len(alias_registry)}")
-    print(f"  Graph Nodes: {graph_store['meta']['node_count']}")
-    print(f"  Graph Edges: {graph_store['meta']['edge_count']}")
-    print(f"{'='*50}")
+    print(f"\n{'='*50}", flush=True)
+    print(f"Session Complete:", flush=True)
+    print(f"  Emails Processed: {session_stats['processed']}", flush=True)
+    print(f"  Entities Created/Updated: {session_stats['entities']}", flush=True)
+    print(f"  Edges Added: {session_stats['edges']}", flush=True)
+    print(f"  Errors: {session_stats['errors']}", flush=True)
+    print(f"  Alias Registry Size: {len(alias_registry)}", flush=True)
+    print(f"  Graph Nodes: {graph_store['meta']['node_count']}", flush=True)
+    print(f"  Graph Edges: {graph_store['meta']['edge_count']}", flush=True)
+    print(f"{'='*50}", flush=True)
 
 if __name__ == "__main__":
     build_wiki()

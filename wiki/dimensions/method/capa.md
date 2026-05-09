@@ -1,4 +1,4 @@
----
+﻿---
 title: "CAPA"
 aliases: ["矯正預防措施", "Corrective and Preventive Action"]
 type: method

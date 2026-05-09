@@ -89,6 +89,7 @@ def ingest_emails(max_emails_per_folder=100):
         conn = init_storage()
         cursor = conn.cursor()
         
+        new_emails_count = 0
         for folder in folders_to_process:
             print(f"📁 Processing folder: {folder.Name}")
             items = folder.Items
@@ -108,7 +109,7 @@ def ingest_emails(max_emails_per_folder=100):
                             continue
                             
                         subj = msg.Subject or "No Subject"
-                        sender = msg.SenderName or "Unknown"
+                        sender = msg.SenderName or msg.SenderEmailAddress or "未命名寄件者"
                         body = msg.Body or ""
                         time = str(msg.ReceivedTime)
                         
@@ -130,15 +131,19 @@ def ingest_emails(max_emails_per_folder=100):
                             VALUES (?, ?, ?, ?, ?, ?, ?)
                         """, (eid, subj, sender, time, body[:1000], folder.Name, raw_path))
                         
+                        new_emails_count += 1
                         count += 1
-                        if count % 10 == 0: print(f"  Processed {count} items...")
+                        if count % 10 == 0: print(f"  Synced {count} items...")
                 except Exception as e:
-                    print(f"  Error processing item: {e}")
                     continue
                     
         conn.commit()
         conn.close()
-        print("✅ Ingestion complete")
+        
+        if new_emails_count > 0:
+            print(f"✅ Ingestion complete: {new_emails_count} new emails imported.")
+        else:
+            print("ℹ️ Check complete: Everything is up to date. No new emails found.")
         
     except Exception as e:
         print(f"❌ Ingestion failed: {e}")

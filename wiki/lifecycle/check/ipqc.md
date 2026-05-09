@@ -1,4 +1,4 @@
----
+﻿---
 title: "IPQC"
 aliases: ["製程品質管制", "In-Process Quality Control"]
 type: method

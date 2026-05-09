@@ -1,4 +1,4 @@
----
+﻿---
 title: "AOI機台"
 aliases: ["Automated Optical Inspection", "AOI Machine"]
 type: machine

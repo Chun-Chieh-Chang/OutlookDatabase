@@ -1,4 +1,4 @@
-# Outlook Database Tool Usage Guide
+﻿# Outlook Database Tool Usage Guide
 
 This toolkit allows you to extract emails from your local Outlook application into a SQLite database (`emails.db`) and then query them programmatically.
 
