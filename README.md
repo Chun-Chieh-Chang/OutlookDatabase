@@ -2,7 +2,29 @@
 
 本系統是一個基於 **PDCA (Plan-Do-Check-Act)** 治理架構的 AI 知識工程平台，旨在將零散的 Outlook 郵件轉化為具備自進化能力的工業知識圖譜。
 
-## 🚀 核心架構：知識生命週期 (Knowledge Lifecycle)
+## 🚀 快速啟動與系統遷移 (Quick Setup & Migration)
+
+如果您想在另一台電腦上運行此系統，請遵循以下步驟：
+
+### 1. 準備環境
+- 安裝 **Python 3.10+**。
+- 安裝 **Ollama** 並下載模型：`ollama pull gemma2:2b`。
+
+### 2. 安裝依賴庫
+```bash
+pip install -r requirements.txt
+```
+
+### 3. 遷移數據 (選用)
+- 將舊電腦的 `emails.db` 與 `wiki/` 目錄直接複製到新電腦的專案根目錄下。
+
+### 4. 啟動服務
+```bash
+python web_app.py
+```
+訪問：`http://localhost:5000`
+
+## 🛠️ 核心架構：知識生命週期 (Knowledge Lifecycle)
 
 1. **數據化入 (Ingestion)**: 從 Outlook 提取原始數據並執行原子化 SQL 儲存。
 2. **語義聚類 (Semantic Clustering)**: 廢止傳統 4M1E，採用 AI 自動化領域映射與知識歸類。
