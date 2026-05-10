@@ -26,7 +26,7 @@ class EmailAnalyzer:
         
         # Ollama Config
         self.ollama_url = self.config.get('ollama', {}).get('url', 'http://localhost:11434')
-        self.ollama_model = self.config.get('ollama', {}).get('model', 'llama3.2:latest')
+        self.ollama_model = self.config.get('ollama', {}).get('model', 'gemma4:e4b')
         self.ollama_timeout = self.config.get('ollama', {}).get('timeout') or self.config.get('timeout', 300)
         
         # Google Config
@@ -129,16 +129,20 @@ class EmailAnalyzer:
         if 'negative' in result: return "負面"
         return "中性"
 
-    def extract_wiki_entities(self, subject, body):
-        """為 Wiki 提取實體 (v5.0: Heuristic Fallback & Self-Evolution)"""
-        # --- Phase 1: Try AI Extraction ---
-        try:
-            prompt = f"""Extract critical technical entities from:
-            SUBJECT: {subject}
-            BODY: {body[:1500]}
-            OUTPUT VALID JSON ONLY: {{ "dimensions": [ {{ "name": "...", "category": "...", ... }} ] }}"""
-            system_prompt = "Industrial data extractor."
-            
+            # [V5.0] Antigravity Mimicry - 高保真工業分析指令
+            system_prompt = """
+你是 SkillsBuilder 系統的核心分析官 (Antigravity Mode)。
+你的目標是執行「高顆粒度」的工業知識提取。
+
+## 執行指令：
+1. 識別實體：找出人名、物料代碼 (如 R1-xxx)、組織、關鍵流程。
+2. 語義分類：歸類至 [HR, QMS, Spec, Project, Training, Finance] 之一。
+3. 提取關聯：找出實體間的關係 (如 "隸屬於", "負責面試", "修正規格")。
+4. 排除雜訊：過濾廣告、系統通知與非技術性閒談。
+
+## 輸出格式：
+必須回傳純 JSON 格式，包含 {"dimensions": [{"name": "...", "category": "...", "description": "...", "relationships": [{"target": "...", "type": "..."}]}]}
+"""
             result = self.call_ollama(prompt, system_prompt)
             if "error" not in result.lower():
                 # (Existing JSON parsing logic simplified for brevity here, assume original logic remains)
@@ -277,24 +281,29 @@ class EmailAnalyzer:
         return result
 
     def synthesize_wiki_page(self, existing_content, new_evidence, source_ref):
-        """使用 AI 合成現有知識與新證據"""
-        prompt = f"""You are a Knowledge Librarian. SYNTHESIZE existing knowledge with new evidence into a cohesive Markdown Wiki page.
- 
- ═══ EXISTING CONTENT ═══
- {existing_content}
- 
- ═══ NEW EVIDENCE ═══
- Source: {source_ref}
- Content: {new_evidence}
- 
- ═══ INSTRUCTIONS ═══
- 1. Integrate the new evidence into the existing content.
- 2. DO NOT just append. Rewrite to reflect the latest state.
- 3. Update the `updated` field in YAML frontmatter to {datetime.now().strftime('%Y-%m-%d')}.
- 4. Use [[Entity Name]] links for all related nodes.
- 5. Output ONLY the updated Markdown.
- """
-        return self.call_ai(prompt, "You are a professional knowledge synthesizer.")
+        """[Antigravity Mode] 執行高保真知識合成"""
+        prompt = f"""You are the SkillsBuilder Digital Art Director & Lead Architect. 
+SYNTHESIZE the existing wiki with new evidence into a PREMIUM Markdown page.
+
+## 核心指令 (Core Instructions)：
+1. 訊息顆粒化：優先使用 Markdown 表格 (Table) 呈現清單數據（如候選人、規格表）。
+2. 動態重構：不要只是附加，要根據新證據重寫，確保反映最新狀態。
+3. 高保真排版：使用 H1, H2, H3 建立清晰層次，並加入「工業語義關聯」區塊。
+4. 關聯強化：對所有實體使用 [[Entity Name]] 語法進行雙向連結。
+5. 視覺對齊：確保排版符合 Royal Blue 美學與 1.8x 行高渲染需求。
+
+---
+### 📚 既有內容 (EXISTING CONTENT)
+{existing_content}
+
+### 🔍 新證據 (NEW EVIDENCE)
+Source: {source_ref}
+Content: {new_evidence}
+
+### 🚀 輸出要求：
+僅輸出更新後的全量 Markdown。確保 YAML 前端 (Frontmatter) 的 `updated` 欄位為 {datetime.now().strftime('%Y-%m-%d')}。
+"""
+        return self.call_ollama(prompt, "You are a professional industrial knowledge synthesizer.")
 
     def query_knowledge_base(self, query):
         """知識庫問答 (RAG)"""
