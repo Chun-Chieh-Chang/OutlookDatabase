@@ -1,983 +1,221 @@
 {
   "meta": {
     "version": "2.0",
-    "updated": "2026-05-05T21:14:33.015343",
-    "node_count": 32,
-    "edge_count": 71
+    "updated": "2026-05-10T10:59:54.720160",
+    "node_count": 15,
+    "edge_count": 0
   },
   "nodes": {
     "r1-10000": {
       "id": "r1-10000",
       "label": "R1-10000",
-      "type": "project",
-      "aliases": [
-        "R1-10000- FA"
-      ],
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "project"
+        "spec"
       ],
       "tags": [
-        "Part Number",
-        "FAI Request"
+        "#automated",
+        "#spec"
       ],
-      "file": "projects\\r1-10000.md"
+      "file": "dimensions\\events\\r1-10000.md"
     },
-    "abbie_tai": {
-      "id": "abbie_tai",
-      "label": "Abbie Tai",
-      "type": "man",
-      "aliases": [
-        "Abbie"
-      ],
+    "r1-15853": {
+      "id": "r1-15853",
+      "label": "R1-15853",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "man"
+        "spec"
       ],
       "tags": [
-        "Decision Maker",
-        "Cost Control"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\man\\abbie_tai.md"
+      "file": "dimensions\\events\\r1-15853.md"
     },
-    "wesley_chang": {
-      "id": "wesley_chang",
-      "label": "Wesley Chang",
-      "type": "man",
-      "aliases": [
-        "張仁傑",
-        "Wesley",
-        "wesley.chang@mouldex.com.tw"
-      ],
+    "r1-9035": {
+      "id": "r1-9035",
+      "label": "R1-9035",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "man"
+        "spec"
       ],
       "tags": [
-        "Estimator",
-        "Decision Maker",
-        "Hiring Manager",
-        "內部主管",
-        "Measurement Manager",
-        "面試官"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\man\\wesley_chang.md"
+      "file": "dimensions\\events\\r1-9035.md"
     },
-    "iris_tai": {
-      "id": "iris_tai",
-      "label": "Iris Tai",
-      "type": "man",
-      "aliases": [
-        "Iris"
-      ],
+    "r1-2360": {
+      "id": "r1-2360",
+      "label": "R1-2360",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "man"
+        "spec"
       ],
       "tags": [
-        "Project Engineer"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\man\\iris_tai.md"
+      "file": "dimensions\\events\\r1-2360.md"
     },
-    "mouldex": {
-      "id": "mouldex",
-      "label": "Mouldex",
-      "type": "org",
-      "aliases": [
-        "Mouldex Data Systems",
-        "mouldex.com.tw",
-        "凱益"
-      ],
+    "r1-8032": {
+      "id": "r1-8032",
+      "label": "R1-8032",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "org"
+        "spec"
       ],
       "tags": [
-        "招聘單位",
-        "Supplier",
-        "模具製造",
-        "Hiring Company",
-        "Manufacturer",
-        "Manufacturing",
-        "Employer"
+        "#automated",
+        "#spec"
       ],
-      "file": "organizations\\mouldex.md"
+      "file": "dimensions\\events\\r1-8032.md"
     },
-    "fai": {
-      "id": "fai",
-      "label": "FAI",
-      "type": "measure",
-      "aliases": [
-        "First Article Inspection",
-        "FA"
-      ],
+    "r1-10134b": {
+      "id": "r1-10134b",
+      "label": "R1-10134B",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "measure"
+        "spec"
       ],
       "tags": [
-        "Inspection",
-        "Validation"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\measurement\\fai.md"
+      "file": "dimensions\\events\\r1-10134b.md"
     },
-    "qip": {
-      "id": "qip",
-      "label": "QIP",
-      "type": "method",
-      "aliases": [
-        "Quality Inspection Plan",
-        "QIP尺寸"
-      ],
+    "r1-8391": {
+      "id": "r1-8391",
+      "label": "R1-8391",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "method"
+        "spec"
       ],
       "tags": [
-        "Quality Standard",
-        "Inspection Criteria"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\method\\qip.md"
+      "file": "dimensions\\events\\r1-8391.md"
     },
-    "估算表": {
-      "id": "估算表",
-      "label": "估算表",
-      "type": "artifact",
-      "aliases": [
-        "時間參數表"
-      ],
+    "r1-9035d": {
+      "id": "r1-9035d",
+      "label": "R1-9035D",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "artifact"
+        "spec"
       ],
       "tags": [
-        "Estimation Tool",
-        "Historical Data"
+        "#automated",
+        "#spec"
       ],
-      "file": "artifacts\\估算表.md"
+      "file": "dimensions\\events\\r1-9035d.md"
     },
-    "cmm": {
-      "id": "cmm",
-      "label": "CMM",
-      "type": "machine",
-      "aliases": [
-        "三次元量測儀"
-      ],
+    "r1-10454": {
+      "id": "r1-10454",
+      "label": "R1-10454",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "machine"
+        "spec"
       ],
       "tags": [
-        "Measurement Equipment"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\machine\\cmm.md"
+      "file": "dimensions\\events\\r1-10454.md"
     },
-    "hsinchu_industrial_park": {
-      "id": "hsinchu_industrial_park",
-      "label": "Hsinchu Industrial Park",
-      "type": "env",
-      "aliases": [
-        "新竹工業區",
-        "Guang Fu South Road"
-      ],
+    "r1-16140": {
+      "id": "r1-16140",
+      "label": "R1-16140",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "env"
+        "spec"
       ],
       "tags": [
-        "Location",
-        "Factory"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\environment\\hsinchu_industrial_park.md"
+      "file": "dimensions\\events\\r1-16140.md"
     },
-    "量測成本": {
-      "id": "量測成本",
-      "label": "量測成本",
-      "type": "domain",
-      "aliases": [
-        "Measurement Cost"
-      ],
+    "r1-8638": {
+      "id": "r1-8638",
+      "label": "R1-8638",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "domain"
+        "spec"
       ],
       "tags": [
-        "Cost Estimation",
-        "Quotation"
+        "#automated",
+        "#spec"
       ],
-      "file": "domains\\量測成本.md"
+      "file": "dimensions\\events\\r1-8638.md"
     },
-    "su_wan-ching": {
-      "id": "su_wan-ching",
-      "label": "Su Wan-ching",
-      "type": "man",
-      "aliases": [
-        "蘇琬晴",
-        "Mandy"
-      ],
+    "r1-3509": {
+      "id": "r1-3509",
+      "label": "R1-3509",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "man"
+        "spec"
       ],
       "tags": [
-        "Candidate",
-        "Quality Inspector"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\man\\su_wan-ching.md"
+      "file": "dimensions\\events\\r1-3509.md"
     },
-    "wo_ya_technology": {
-      "id": "wo_ya_technology",
-      "label": "Wo Ya Technology",
-      "type": "org",
-      "aliases": [
-        "沃亞科技股份有限公司"
-      ],
+    "r1-3517": {
+      "id": "r1-3517",
+      "label": "R1-3517",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "org"
+        "spec"
       ],
       "tags": [
-        "Previous Employer",
-        "Semiconductor"
+        "#automated",
+        "#spec"
       ],
-      "file": "organizations\\wo_ya_technology.md"
+      "file": "dimensions\\events\\r1-3517.md"
     },
-    "ipqc": {
-      "id": "ipqc",
-      "label": "IPQC",
-      "type": "method",
-      "aliases": [
-        "製程品質管制",
-        "In-Process Quality Control"
-      ],
+    "r1-3527": {
+      "id": "r1-3527",
+      "label": "R1-3527",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "method"
+        "spec"
       ],
       "tags": [
-        "Quality Control",
-        "SOP"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\method\\ipqc.md"
+      "file": "dimensions\\events\\r1-3527.md"
     },
-    "cleanroom_inspection": {
-      "id": "cleanroom_inspection",
-      "label": "Cleanroom Inspection",
-      "type": "measure",
-      "aliases": [
-        "潔淨室巡檢與稽核"
-      ],
+    "r1-8112": {
+      "id": "r1-8112",
+      "label": "R1-8112",
+      "type": "spec",
+      "aliases": [],
       "dimensions": [
-        "measure"
+        "spec"
       ],
       "tags": [
-        "Audit",
-        "Environment"
+        "#automated",
+        "#spec"
       ],
-      "file": "dimensions\\measurement\\cleanroom_inspection.md"
-    },
-    "cleanroom": {
-      "id": "cleanroom",
-      "label": "Cleanroom",
-      "type": "env",
-      "aliases": [
-        "潔淨室",
-        "廠區潔淨室"
-      ],
-      "dimensions": [
-        "env"
-      ],
-      "tags": [
-        "Production Environment"
-      ],
-      "file": "dimensions\\environment\\cleanroom.md"
-    },
-    "104_job_bank": {
-      "id": "104_job_bank",
-      "label": "104 Job Bank",
-      "type": "org",
-      "aliases": [
-        "104配對人選",
-        "jobbank",
-        "104 Job Bank",
-        "104人力銀行"
-      ],
-      "dimensions": [
-        "org"
-      ],
-      "tags": [
-        "招聘平台",
-        "Recruitment Platform",
-        "系統自動發送",
-        "Recruitment Tool",
-        "Platform"
-      ],
-      "file": "organizations\\104_job_bank.md"
-    },
-    "蔡丞甯": {
-      "id": "蔡丞甯",
-      "label": "蔡丞甯",
-      "type": "man",
-      "aliases": [
-        "Ning",
-        "Ning Tsai"
-      ],
-      "dimensions": [
-        "man"
-      ],
-      "tags": [
-        "Candidate",
-        "QC Inspector"
-      ],
-      "file": "dimensions\\man\\蔡丞甯.md"
-    },
-    "華矽創新股份有限公司": {
-      "id": "華矽創新股份有限公司",
-      "label": "華矽創新股份有限公司",
-      "type": "org",
-      "aliases": [
-        "華矽創新"
-      ],
-      "dimensions": [
-        "org"
-      ],
-      "tags": [
-        "Semiconductor",
-        "Current Employer"
-      ],
-      "file": "organizations\\華矽創新股份有限公司.md"
-    },
-    "品管檢驗員": {
-      "id": "品管檢驗員",
-      "label": "品管檢驗員",
-      "type": "domain",
-      "aliases": [
-        "QC Inspector",
-        "Quality Control Inspector"
-      ],
-      "dimensions": [
-        "domain"
-      ],
-      "tags": [
-        "Job Role",
-        "Quality Control"
-      ],
-      "file": "domains\\品管檢驗員.md"
-    },
-    "aoi機台": {
-      "id": "aoi機台",
-      "label": "AOI機台",
-      "type": "machine",
-      "aliases": [
-        "Automated Optical Inspection",
-        "AOI Machine"
-      ],
-      "dimensions": [
-        "machine"
-      ],
-      "tags": [
-        "Inspection Equipment",
-        "Automation"
-      ],
-      "file": "dimensions\\machine\\aoi機台.md"
-    },
-    "平坦度量測": {
-      "id": "平坦度量測",
-      "label": "平坦度量測",
-      "type": "measure",
-      "aliases": [
-        "Flatness Measurement"
-      ],
-      "dimensions": [
-        "measure"
-      ],
-      "tags": [
-        "Metrology",
-        "Quality Check"
-      ],
-      "file": "dimensions\\measurement\\平坦度量測.md"
-    },
-    "新竹縣湖口鄉": {
-      "id": "新竹縣湖口鄉",
-      "label": "新竹縣湖口鄉",
-      "type": "env",
-      "aliases": [
-        "湖口",
-        "Hukou"
-      ],
-      "dimensions": [
-        "env"
-      ],
-      "tags": [
-        "地理位置",
-        "Industrial Zone",
-        "工作地點",
-        "Location"
-      ],
-      "file": "dimensions\\environment\\新竹縣湖口鄉.md"
-    },
-    "面談": {
-      "id": "面談",
-      "label": "面談",
-      "type": "event",
-      "aliases": [
-        "Interview"
-      ],
-      "dimensions": [
-        "event"
-      ],
-      "tags": [
-        "Recruitment",
-        "Milestone"
-      ],
-      "file": "dimensions\\events\\面談.md"
-    },
-    "歐帕生技醫藥股份有限公司": {
-      "id": "歐帕生技醫藥股份有限公司",
-      "label": "歐帕生技醫藥股份有限公司",
-      "type": "org",
-      "aliases": [
-        "OEP",
-        "歐帕生技"
-      ],
-      "dimensions": [
-        "org"
-      ],
-      "tags": [
-        "藥品製造業",
-        "現職單位"
-      ],
-      "file": "organizations\\歐帕生技醫藥股份有限公司.md"
-    },
-    "陳玫婷": {
-      "id": "陳玫婷",
-      "label": "陳玫婷",
-      "type": "man",
-      "aliases": [
-        "Chen Mei-ting"
-      ],
-      "dimensions": [
-        "man"
-      ],
-      "tags": [
-        "品管工程師",
-        "候選人"
-      ],
-      "file": "dimensions\\man\\陳玫婷.md"
-    },
-    "品管工程師": {
-      "id": "品管工程師",
-      "label": "品管工程師",
-      "type": "domain",
-      "aliases": [
-        "Quality Engineer",
-        "QE"
-      ],
-      "dimensions": [
-        "domain"
-      ],
-      "tags": [
-        "職位名稱",
-        "品質控制"
-      ],
-      "file": "domains\\品管工程師.md"
-    },
-    "iso_9001": {
-      "id": "iso_9001",
-      "label": "ISO 9001",
-      "type": "method",
-      "aliases": [
-        "ISO 9001 內稽"
-      ],
-      "dimensions": [
-        "method"
-      ],
-      "tags": [
-        "品質標準",
-        "國際規範"
-      ],
-      "file": "dimensions\\method\\iso_9001.md"
-    },
-    "capa": {
-      "id": "capa",
-      "label": "CAPA",
-      "type": "method",
-      "aliases": [
-        "矯正預防措施",
-        "Corrective and Preventive Action"
-      ],
-      "dimensions": [
-        "method"
-      ],
-      "tags": [
-        "品質改善",
-        "CAPA"
-      ],
-      "file": "dimensions\\method\\capa.md"
-    },
-    "root_cause_analysis": {
-      "id": "root_cause_analysis",
-      "label": "Root Cause Analysis",
-      "type": "method",
-      "aliases": [
-        "RCA",
-        "根本原因分析"
-      ],
-      "dimensions": [
-        "method"
-      ],
-      "tags": [
-        "問題分析",
-        "RCA"
-      ],
-      "file": "dimensions\\method\\root_cause_analysis.md"
-    },
-    "deviation_investigation": {
-      "id": "deviation_investigation",
-      "label": "Deviation Investigation",
-      "type": "event",
-      "aliases": [
-        "異常調查"
-      ],
-      "dimensions": [
-        "event"
-      ],
-      "tags": [
-        "異常管理",
-        "偏差調查"
-      ],
-      "file": "dimensions\\events\\deviation_investigation.md"
-    },
-    "gmp": {
-      "id": "gmp",
-      "label": "GMP",
-      "type": "method",
-      "aliases": [
-        "良好生產規範",
-        "Good Manufacturing Practice"
-      ],
-      "dimensions": [
-        "method"
-      ],
-      "tags": [
-        "生產規範",
-        "藥品法規"
-      ],
-      "file": "dimensions\\method\\gmp.md"
+      "file": "dimensions\\events\\r1-8112.md"
     }
   },
-  "edges": [
-    {
-      "source": "r1-10000",
-      "target": "abbie_tai",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "r1-10000",
-      "target": "wesley_chang",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "r1-10000",
-      "target": "iris_tai",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "r1-10000",
-      "target": "fai",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "abbie_tai",
-      "target": "mouldex",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "abbie_tai",
-      "target": "wesley_chang",
-      "relation": "collaborates_with",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "abbie_tai",
-      "target": "r1-10000",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "mouldex",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "mike",
-      "relation": "collaborates_with",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "估算表",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "iris_tai",
-      "target": "mouldex",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "iris_tai",
-      "target": "r1-10000",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "mouldex",
-      "target": "abbie_tai",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "mouldex",
-      "target": "wesley_chang",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "mouldex",
-      "target": "hsinchu_industrial_park",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "fai",
-      "target": "r1-10000",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "fai",
-      "target": "qip",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "qip",
-      "target": "fai",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "qip",
-      "target": "r1-10000",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "估算表",
-      "target": "wesley_chang",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "估算表",
-      "target": "量測成本",
-      "relation": "produces",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "cmm",
-      "target": "fai",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "hsinchu_industrial_park",
-      "target": "mouldex",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "量測成本",
-      "target": "abbie_tai",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "量測成本",
-      "target": "估算表",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504012200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "mouldex",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "elsie",
-      "relation": "collaborates_with",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "su_wan-ching",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "su_wan-ching",
-      "target": "wo_ya_technology",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "su_wan-ching",
-      "target": "ipqc",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "su_wan-ching",
-      "target": "mouldex",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "mouldex",
-      "target": "104_job_bank",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "wo_ya_technology",
-      "target": "su_wan-ching",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "wo_ya_technology",
-      "target": "cleanroom_inspection",
-      "relation": "produces",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "ipqc",
-      "target": "su_wan-ching",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "cleanroom_inspection",
-      "target": "wo_ya_technology",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "cleanroom_inspection",
-      "target": "cleanroom",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "cleanroom",
-      "target": "cleanroom_inspection",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "104_job_bank",
-      "target": "mouldex",
-      "relation": "supplies_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "104_job_bank",
-      "target": "su_wan-ching",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041A2200"
-    },
-    {
-      "source": "mouldex",
-      "target": "elsie",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "mouldex",
-      "target": "蔡丞甯",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "wesley_chang",
-      "target": "蔡丞甯",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "蔡丞甯",
-      "target": "華矽創新股份有限公司",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "蔡丞甯",
-      "target": "aoi機台",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "蔡丞甯",
-      "target": "平坦度量測",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "華矽創新股份有限公司",
-      "target": "蔡丞甯",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "品管檢驗員",
-      "target": "mouldex",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "品管檢驗員",
-      "target": "蔡丞甯",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "aoi機台",
-      "target": "蔡丞甯",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "平坦度量測",
-      "target": "蔡丞甯",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "新竹縣湖口鄉",
-      "target": "蔡丞甯",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "面談",
-      "target": "wesley_chang",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "面談",
-      "target": "蔡丞甯",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "104_job_bank",
-      "target": "mouldex",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE95041F2200"
-    },
-    {
-      "source": "mouldex",
-      "target": "陳玫婷",
-      "relation": "validates",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "歐帕生技醫藥股份有限公司",
-      "target": "陳玫婷",
-      "relation": "supplies_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "陳玫婷",
-      "target": "歐帕生技醫藥股份有限公司",
-      "relation": "works_on",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "陳玫婷",
-      "target": "iso_9001",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "陳玫婷",
-      "target": "capa",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "品管工程師",
-      "target": "陳玫婷",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "品管工程師",
-      "target": "mouldex",
-      "relation": "belongs_to",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "iso_9001",
-      "target": "陳玫婷",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "capa",
-      "target": "陳玫婷",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "capa",
-      "target": "root_cause_analysis",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "root_cause_analysis",
-      "target": "陳玫婷",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "root_cause_analysis",
-      "target": "deviation_investigation",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "deviation_investigation",
-      "target": "陳玫婷",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "deviation_investigation",
-      "target": "gmp",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "gmp",
-      "target": "歐帕生技醫藥股份有限公司",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    },
-    {
-      "source": "新竹縣湖口鄉",
-      "target": "陳玫婷",
-      "relation": "references",
-      "source_email": "0000000084B2484667C9B844940F3764DDB2EE9504232200"
-    }
-  ]
+  "edges": []
 }

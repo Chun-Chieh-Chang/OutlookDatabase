@@ -1,54 +1,38 @@
-﻿# Outlook Database Tool Usage Guide
+# SkillsBuilder AI: 工業知識自進化門戶 (Industrial Knowledge Portal)
 
-This toolkit allows you to extract emails from your local Outlook application into a SQLite database (`emails.db`) and then query them programmatically.
+本系統是一個基於 **PDCA (Plan-Do-Check-Act)** 治理架構的 AI 知識工程平台，旨在將零散的 Outlook 郵件轉化為具備自進化能力的工業知識圖譜。
 
-## Prerequisites
+## 🚀 核心架構：知識生命週期 (Knowledge Lifecycle)
 
-1.  **Windows OS** having **Classic Outlook Desktop App** installed and configured with an account.
-2.  **Python** installed.
-3.  **Required Libraries**:
-    Open your terminal (PowerShell or Command Prompt) and install the necessary packages:
-    ```bash
-    pip install pywin32 pandas
-    ```
+1. **數據化入 (Ingestion)**: 從 Outlook 提取原始數據並執行原子化 SQL 儲存。
+2. **語義聚類 (Semantic Clustering)**: 廢止傳統 4M1E，採用 AI 自動化領域映射與知識歸類。
+3. **3D 空間導航 (3D Visualization)**: 提供具備游標連動縮放功能的 3D 知識圖譜。
+4. **自進化治理 (Self-Evolution)**: 系統自動從開發與運行錯誤中提煉 CAPA Skill，並動態優化操作手冊。
 
-## How to Use
+## 🛠️ 核心功能模組
 
-### 1. Build the Database
-Run the builder script to extract emails from your Outlook Inbox.
+- **Dashboard**: 實時監控系統進化分數與數據體量。
+- **Wiki Explorer**: 多維度檢索與 AI 知識深度合成。
+- **System Live Pulse**: 右下角即時推播後端分析軌跡。
+- **Evolutionary Manual**: 自動進化的系統操作手冊。
 
+## ⚙️ 開發者操作指南
+
+### 啟動服務端
 ```bash
-python outlook_db_builder.py
+python web_app.py
+```
+訪問：`http://localhost:5000`
+
+### 啟動知識進化引擎 (Batch)
+```bash
+python wiki_builder.py 1000
 ```
 
-- This script connects to Outlook.
-- It reads emails from your 'Inbox'.
-- It creates (or updates) `emails.db`.
-- **Note**: The first run might take some time if you have thousands of emails. I set a limit of 500 emails for the first run in the code (`MAX_EMAILS = 500`). You can increase this in the file if needed.
-
-### 2. Query the Data
-Run the query tool to analyze your emails.
-
+### 執行治理確效
 ```bash
-python query_examples.py
+python tools/automated_pdca_check.py
 ```
 
-- This script connects to `emails.db`.
-- It shows basic statistics (Total emails, Top senders).
-- It allows you to **search** by keyword.
-- It allows you to **export** the database to a CSV file.
-
-## Advanced Usage (AI Integration)
-
-Now that your data is in `emails.db`, you can use it with AI tools.
-
-**Example Prompt for an AI coding assistant:**
-> "Write a Python script that connects to `emails.db` and finds all emails related to 'Project Alpha' sent in the last month, then summarizes their content."
-
-The database schema is simple:
-- `entry_id`: Unique ID from Outlook
-- `subject`: Email subject
-- `sender_name`: Name of the sender
-- `sender_email`: Email address of the sender
-- `received_time`: Time received
-- `body`: The text content of the email
+## 📜 治理協議
+本專案嚴格遵守 `SYSTEM_GOVERNANCE_PROTOCOL.md`。所有的變更必須通過 PDCA 循環驗證，並將教訓固化為 `skills/` 下的防禦性腳本。

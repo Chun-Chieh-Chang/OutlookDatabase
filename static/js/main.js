@@ -55,13 +55,59 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardStats();
     loadRecentEmails();
     checkAIStatus();
+    pollSystemLogs(); // 立即執行一次
     
     setInterval(() => {
         if (AppState.currentView === '3d') sync3DGraph();
         loadDashboardStats();
         checkAIStatus();
-    }, 8000);
+        pollSystemLogs();
+    }, 4000); // 縮短為 4 秒一次，提升動態感
 });
+
+let lastLogLines = [];
+async function pollSystemLogs() {
+    try {
+        const resp = await fetch('/api/system_logs?t=' + Date.now());
+        const lines = await resp.json();
+        
+        // 更新標題呼吸燈
+        const pulseDot = UI.get('pulse-dot');
+        if (pulseDot) {
+            pulseDot.classList.add('animate-pulse');
+            pulseDot.style.color = lines.length > 0 ? '#10b981' : '#64748b';
+        }
+
+        // 更新進度條與計時器
+        try {
+            const progResp = await fetch('/api/system_progress?t=' + Date.now());
+            const prog = await progResp.json();
+            const bar = UI.get('system-progress-bar');
+            const timer = UI.get('system-timer');
+            
+            if (bar) bar.style.width = (prog.percentage || 0) + '%';
+            if (timer && prog.elapsed_seconds) {
+                const m = Math.floor(prog.elapsed_seconds / 60).toString().padStart(2, '0');
+                const s = (prog.elapsed_seconds % 60).toString().padStart(2, '0');
+                timer.innerText = `${m}:${s}`;
+            }
+        } catch (e) {}
+
+        lines.forEach(line => {
+            const cleanLine = line.trim();
+            // 如果這行還沒出現在日誌視窗中
+            if (cleanLine && !lastLogLines.includes(cleanLine)) {
+                // 放寬過濾條件，包含所有進度訊號
+                const isProgress = /正在分析|✅|🚀|\[Fallback\]|已加載|Starting|Analysis|Waiting|Processing/.test(cleanLine);
+                if (isProgress) {
+                    UI.log(cleanLine, cleanLine.includes('Fallback') ? 'error' : 'info');
+                }
+                lastLogLines.push(cleanLine);
+                if (lastLogLines.length > 100) lastLogLines.shift();
+            }
+        });
+    } catch (err) {}
+}
 
 async function checkAIStatus() {
     try {
@@ -164,6 +210,44 @@ async function init3DGraph() {
 
         graphInstance.d3Force('link').distance(60);
         graphInstance.controls().autoRotate = true;
+
+        // [Premium UX] 實作游標基準縮放 (Zoom to Cursor)
+        elem.addEventListener('wheel', (e) => {
+            if (!graphInstance) return;
+            
+            // 1. 一旦開始縮放，停止自動旋轉，讓使用者接管視角
+            const controls = graphInstance.controls();
+            if (controls.autoRotate) {
+                controls.autoRotate = false;
+                UI.log('使用者接管：已終止自動旋轉');
+            }
+            
+            const rect = elem.getBoundingClientRect();
+            const mouse = new THREE.Vector2(
+                ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                -((e.clientY - rect.top) / rect.height) * 2 + 1
+            );
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, graphInstance.camera());
+            
+            // 優先尋找節點
+            const intersects = raycaster.intersectObjects(graphInstance.scene().children, true);
+            
+            if (intersects.length > 0) {
+                const targetPoint = intersects[0].point;
+                // 提高權重，讓移動更有感
+                controls.target.lerp(targetPoint, 0.2);
+            } else {
+                // 如果指在空白處，投影到通過原點且平行於相機平面的虛擬平面上
+                const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+                const targetPoint = new THREE.Vector3();
+                if (raycaster.ray.intersectPlane(plane, targetPoint)) {
+                    controls.target.lerp(targetPoint, 0.1);
+                }
+            }
+        }, { passive: true });
+
     } catch (err) { UI.log('3D 引擎崩潰: ' + err.message, 'error'); }
 }
 
@@ -196,16 +280,41 @@ function showView(v) {
     else if (v === 'devlog') { UI.show('view-devlog'); loadDevLog(); }
 }
 
+function reset3DView() {
+    if (!graphInstance) return;
+    UI.log('重置 3D 空間視野，正在還原全貌...');
+    
+    // 1. 還原相機焦點到原點
+    const controls = graphInstance.controls();
+    controls.target.set(0, 0, 0);
+    
+    // 2. 使用內建函數平滑地縮放到容納所有節點
+    graphInstance.zoomToFit(1000, 50);
+}
+
 async function loadDevLog() {
     UI.log('正在讀取系統進化與故障確效紀錄...');
     try {
         const resp = await fetch('/api/dev_log?t=' + Date.now());
         const data = await resp.json();
         if (data.error) throw new Error(data.error);
+        
         const container = UI.get('devLogContent');
         if (container) {
+            // 1. Markdown 渲染
             container.innerHTML = marked.parse(data.content || '目前尚無日誌');
-            UI.renderMath('devLogContent');
+            
+            // 2. 強化版數學公式渲染 (KaTeX)
+            let html = container.innerHTML;
+            html = html.replace(/\$\$(.*?)\$\$/gs, (m, p1) => {
+                try { return `<div class="katex-display">${katex.renderToString(p1, { displayMode: true })}</div>`; } catch (e) { return m; }
+            });
+            html = html.replace(/\$(.*?)\$/g, (m, p1) => {
+                try { return `<span class="katex-inline">${katex.renderToString(p1, { displayMode: false })}</span>`; } catch (e) { return m; }
+            });
+            container.innerHTML = html;
+            
+            UI.log('日誌渲染完成：已套用顆粒化排版', 'info');
         }
     } catch (err) {
         UI.log('日誌讀取失敗: ' + err.message, 'error');
@@ -218,10 +327,31 @@ async function loadManual() {
         const resp = await fetch('/api/manual?t=' + Date.now());
         const data = await resp.json();
         if (data.error) throw new Error(data.error);
+        
         const container = UI.get('manualContent');
         if (container) {
+            // 1. Markdown 渲染
             container.innerHTML = marked.parse(data.content || '目前尚無手冊內容');
-            UI.renderMath('manualContent');
+            
+            // 2. 強化版數學公式渲染 (KaTeX)
+            let html = container.innerHTML;
+            
+            // 處理獨立區塊公式 $$ ... $$
+            html = html.replace(/\$\$(.*?)\$\$/gs, (match, p1) => {
+                try {
+                    return `<div class="katex-display">${katex.renderToString(p1, { displayMode: true })}</div>`;
+                } catch (e) { return match; }
+            });
+            
+            // 處理行內公式 $ ... $
+            html = html.replace(/\$(.*?)\$/g, (match, p1) => {
+                try {
+                    return `<span class="katex-inline">${katex.renderToString(p1, { displayMode: false })}</span>`;
+                } catch (e) { return match; }
+            });
+            
+            container.innerHTML = html;
+            UI.log('手冊渲染完成：已套用全量數學公式解析 (Display & Inline)', 'info');
         }
     } catch (err) {
         UI.log('手冊讀取失敗: ' + err.message, 'error');

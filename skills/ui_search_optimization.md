@@ -1,51 +1,50 @@
-﻿# Skill: SkillsBuilder UI & Search Optimization (Industrial Grade)
+# Skill: SkillsBuilder UI & Search Optimization (工業級檢索與 UI 優化)
 
-## 1. ?詨?憿 (Vision)
-蝣箔? SkillsBuilder AI 隞?其遙雿汗?函憓??質?瑕???銵蜇?????閬死銵函嚗蒂???閬箏???憭扳?楊撟游漲??擃???
-
----
-
-## 2. 敹怠??脩戌蝑 (Cache-Busting SOP)
-### ??嚗?
-?汗?典虜?翰????HTML/CSS嚗??港耨?寧??
-### 閫?捱?寞?嚗?
-- **?拍??湔? (Physical Flip)**嚗??芣靽格 `index.html`嚗?湔撱箇? `index_v3.html` 銝血 Flask 頝舐銝剖???
-- **?扯璅?? (Inline Priority)**嚗??詨? UI嚗? AI ?批銝剖?嚗蝙??`style="..."`??舀見撘?甈?擃銝??銝???憭 CSS 瑼?敹怠?敶梢??
+## 1. 核心願景
+確保 SkillsBuilder AI 在處理大規模工業數據時，仍能維持極速的響應與直覺的操作體驗，特別是在跨年度數據的定位與 UI 的魯棒性上。
 
 ---
 
-## 3. 頝典僑摨行?撠???(Search UX Pattern)
-### ??嚗?
-鞈??之???僑隞質???鋡急??啣???蝡荔?撠?冽隤支誑?箄??憭晞?
-### 閫?捱?寞?嚗?
-- **撟游漲??閮? (Year Dist API)**嚗?撠?API 敹???僑隞賜?蝑蝯梯???
-- **??撠璅惜 (Dynamic Chips)**嚗?蝡舀??API ???`year_distribution` ?芸???頝唾?????
-- **銝?萇祟??(Jump Search)**嚗???蝐文??芸??瑁? `keyword + year` ???蝞?
+## 2. 快取失效與渲染 SOP (Cache-Busting)
+### 問題：
+開發過程中，瀏覽器常因快取舊版 HTML/CSS 導致新功能失效。
+### 解決方案：
+- **物理切換 (Physical Flip)**: 不僅修改 `index.html`，必要時建立 `index_v3.html` 並在 Flask 路由中切換。
+- **行內優先 (Inline Priority)**: 針對關鍵 UI（如 AI 彈窗），使用行內樣式確保基本結構在 CSS 加載前即正確顯示。
 
 ---
 
-## 4. 擳舀??折蝳?(Robustness Pattern)
-### ??嚗?
-UI 霈??航撠 JavaScript ?曆???DOM ?辣?援瞏啜?
-### 閫?捱?寞?嚗?
-**敹?** 撠???DOM ??雿輻摮?扳炎?伐?
+## 3. 跨年度檢索模式 (Search UX Pattern)
+### 問題：
+數據庫跨度過大時，單純關鍵字搜尋會返回過多雜訊。
+### 解決方案：
+- **年份分佈統計 (Year Dist API)**: API 必須回傳各年份的命中數量。
+- **動態過濾標籤 (Dynamic Chips)**: UI 根據 `year_distribution` 自動生成可點擊的年份標籤。
+- **一鍵跳轉 (Jump Search)**: 支援 `關鍵字 + 年份` 的複合搜尋邏輯。
+
+---
+
+## 4. DOM 魯棒性守則 (Robustness Pattern)
+### 問題：
+非同步加載時，JavaScript 常因找不到尚未渲染的 DOM 而崩潰。
+### 解決方案：
+**強制** 對所有 DOM 操作進行存在性檢查：
 ```javascript
 const el = document.getElementById('target');
 if (el) {
-    el.classList.add('hidden'); // 摰??
+    el.classList.add('active'); // 安全執行
 }
 ```
 
 ---
 
-## 5. ?脣蔗憭批葦閬? (Design Tokens)
-- **Primary**: `#3B82F6` (Royal Blue) - ?冽銝餉?????憿?
-- **Surface**: `#FFFFFF` (Pure White) - ?冽?∠???踴?
-- **Shadow**: `0 30px 60px rgba(15,23,42,0.25)` - ?冽??蝡舀瘚格???
+## 5. 設計令牌 (Design Tokens)
+- **Primary**: `#3B82F6` (皇家藍) - 用於主要操作與標題。
+- **Surface**: `#FFFFFF` (純白) - 用於卡片與內容載體。
+- **Shadow**: `0 30px 60px rgba(15,23,42,0.15)` - 營造工業級的懸浮感。
 
 ---
 
-## 6. 蝬剛風閮? (Maintenance)
-- **?**: 1.0.0 (2026-05-05)
-- **???*: 撌脤蝵脰 `web_app.py` 頝舐
-- **???*: Antigravity (Senior Full-stack Architect & Art Director)
+## 6. 維護紀錄 (Maintenance)
+- **版本**: 1.1.0 (2026-05-10)
+- **執行人**: Antigravity (Senior Full-stack Architect)

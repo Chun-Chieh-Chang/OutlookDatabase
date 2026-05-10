@@ -15,7 +15,7 @@ import io
 if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-WIKI_DIR = 'wiki/dimensions'
+WIKI_DIR = 'wiki'
 OUTPUT_FILE = 'wiki/graph_data.json'
 
 # Color Master Palette (QC 3.0 Mapping)
@@ -57,7 +57,7 @@ def build_obsidian_graph():
         for f in files:
             if f.endswith('.md') and f.lower() not in ['index.md', 'log.md', 'nudge_list.md']:
                 path = os.path.join(root, f)
-                with open(path, 'r', encoding='utf-8') as file:
+                with open(path, 'r', encoding='utf-8-sig') as file:
                     content = file.read()
                     meta = extract_metadata(content)
                     
@@ -88,15 +88,23 @@ def build_obsidian_graph():
             if f.endswith('.md') and f.lower() not in ['index.md', 'log.md']:
                 source_id = f.replace('.md', '')
                 path = os.path.join(root, f)
-                with open(path, 'r', encoding='utf-8') as file:
+                with open(path, 'r', encoding='utf-8-sig') as file:
                     content = file.read()
                     
                     # Find [[Links]]
                     found_links = re.findall(r'\[\[(.*?)\]\]', content)
-                    for target in found_links:
+                    # Find [MarkdownLinks](target)
+                    found_md_links = re.findall(r'\[.*?\]\((.*?)\)', content)
+                    
+                    all_targets = found_links + found_md_links
+                    
+                    for target in all_targets:
                         # Handle potential display text [[Path|Display]]
                         target_name = target.split('|')[0].strip()
-                        target_id = target_name.replace('.md', '').split('/')[-1] # Simple ID logic
+                        # Handle potential file extension/path in Markdown links
+                        target_id = target_name.replace('.md', '').split('/')[-1]
+                        
+                        if target_id == source_id: continue # Skip self-links
                         
                         # Create link
                         links.append({"source": source_id, "target": target_id})

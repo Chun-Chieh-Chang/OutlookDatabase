@@ -213,7 +213,7 @@ def search_emails():
 @app.route('/api/manual')
 def get_manual():
     try:
-        content = safe_read_file('SYSTEM_MANUAL.md')
+        content = safe_read_file('MANUAL.md')
         return jsonify({'content': content})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -433,6 +433,30 @@ def ask_wiki():
         return jsonify({'answer': answer})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/system_logs')
+def get_system_logs():
+    log_path = 'logs/system.log'
+    if not os.path.exists(log_path):
+        return jsonify([])
+    try:
+        # 讀取最後 10 行日誌
+        with open(log_path, 'r', encoding='utf-8-sig', errors='ignore') as f:
+            lines = f.readlines()
+            return jsonify(lines[-10:])
+    except:
+        return jsonify([])
+
+@app.route('/api/system_progress')
+def get_system_progress():
+    progress_path = 'logs/progress.json'
+    if not os.path.exists(progress_path):
+        return jsonify({"percentage": 0, "status": "Idle"})
+    try:
+        with open(progress_path, 'r', encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    except:
+        return jsonify({"percentage": 0, "status": "Error"})
 
 @app.route('/api/graph_data')
 def get_graph_data():

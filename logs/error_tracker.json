@@ -1,0 +1,17 @@
+{
+    "failure_modes": [
+        {
+            "type": "UnicodeEncodeError",
+            "occurrence": 3,
+            "description": "Windows console (CP950) failing to encode UTF-8 emojis or multi-byte characters.",
+            "status": "RCA_TRIGGERED"
+        },
+        {
+            "type": "PathMismatch",
+            "occurrence": 1,
+            "description": "API route pointing to non-existent or legacy filename.",
+            "status": "WATCHING"
+        }
+    ],
+    "last_update": "2026-05-10T11:07:00"
+}

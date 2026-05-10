@@ -3,7 +3,7 @@
   "ollama": {
     "url": "http://localhost:11434",
     "model": "gemma4:e4b",
-    "timeout": 900
+    "timeout": 30
   },
   "google": {
     "api_key": "test-key-123",

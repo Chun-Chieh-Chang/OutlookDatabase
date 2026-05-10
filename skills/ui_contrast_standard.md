@@ -1,38 +1,56 @@
-﻿# UI 撠?摨西??芋撘??蝭?(SkillsBuilder AI Standard)
+# UI 對比度與視覺層次規範 (SkillsBuilder AI Standard)
 
 > [!IMPORTANT]
-> ?祈?蝭?函Ⅱ靽?SkillsBuilder AI ??嗅隞颱?璅∪?銝??瑕??蝝??航??扯?閬死鞈芣???
-## 1. ??撠?摨行?皞?(Typography Contrast)
+> 此規範旨在確保 SkillsBuilder AI 在任何環境（淺色/深色模式）下均具備專業級的資訊辨識度與美感。
 
-### 瘛箄璅∪? (Light Mode)
-- **?摨**: `#F9FAFB` ??`#FFFFFF`
-- **銝餉?璅? (H1-H3)**: 敹?雿輻 `#0F172A` (瘛望絲頠?) 隞乩??楛摨佗?摮????`800`??- **?扳?畾菔 (P/LI)**: 敹?雿輻 `#475569` 隞乩??楛摨佗?摮?銝???`450`??- **撘瑁矽?? (Strong)**: 雿輻 `#2563EB` (擙株??? 憓?撘??扼?
-### 瘛梯璅∪? (Dark Mode)
-- **?摨**: `#0F172A`
-- **銝餉?璅? (H1-H3)**: 敹?雿輻 `#F8FAFC` (璆菜滓?)嚗?????`800`??- **?扳?畾菔 (P/LI)**: 敹?雿輻 `#F8FAFC`嚗?摮??????`500` 隞亙??楛?脰??舐????? (Halo Effect)??- **撘瑁矽?? (Strong)**: 雿輻 `#93C5FD` (瘛箏予蝛箄?) ?Ｙ??澆???
-## 2. 蝯辣??銵?(Theme Isolation)
+## 1. 字體與對比度 (Typography Contrast)
 
-?渡?雿輻蝖祉楊蝣?(Hardcoded) ??`background: white` ??`color: black`??敹?雿輻 CSS ?豢??券脰?蝎曄Ⅱ?嚗?
+### 淺色模式 (Light Mode)
+- **背景底色**: `#F9FAFB` 或 `#FFFFFF`
+- **主標題 (H1-H3)**: 必須使用 `#111827` (曜石黑) 以強化視認度，字重建議 `800`。
+- **正文段落 (P/LI)**: 必須使用 `#4B5563` (灰度 600) 以維持閱讀舒適度，字重不低於 `400`。
+- **強調文字 (Strong)**: 使用 `#3B82F6` (品牌藍) 增加視覺錨點。
+
+### 深色模式 (Dark Mode)
+- **背景底色**: `#0F172A` (深藍黑)
+- **主標題 (H1-H3)**: 必須使用 `#F1F5F9` (雲母白)，字重建議 `800`。
+- **正文段落 (P/LI)**: 必須使用 `#94A3B8` (灰度 400)，字重不低於 `450`。
+- **強調文字 (Strong)**: 使用 `#60A5FA` (天藍) 提升視覺層次。
+
+## 2. 主題隔離實踐 (Theme Isolation)
+
+嚴禁使用硬編碼 (Hardcoded) 的 `background: white` 或 `color: black`。必須使用 CSS 變數或動態切換：
+
 ```css
-/* 瘛箄撠惇璅?? */
-:root:not([data-theme="dark"]) .prose blockquote {
-    background: #F1F5F9;
-    border-left: 4px solid #3B82F6;
+/* 淺色模式區塊 */
+:root:not([data-theme="dark"]) .card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
 }
 
-/* 瘛梯撠惇璅?? */
-[data-theme="dark"] .prose blockquote {
-    background: rgba(30, 41, 59, 0.5);
-    border-left: 4px solid #60A5FA;
+/* 深色模式區塊 */
+[data-theme="dark"] .card {
+    background: #1E293B;
+    border: 1px solid #334155;
 }
 ```
 
-## 3. ?批捆蝻箏仃?脩戌 (Data Resilience)
+## 3. 數據回饋彈性 (Data Resilience)
 
-?嗉??澈?喳??⊥?鞈???UI 敹?隞亙?璆剛?隤脰???鋆????渡??湔憿舐內 `Unknown` ??`0`??
-- **Unknown Sender** -> `蝟餌絞??撖阡?`
-- **Unknown Time** -> `?交?銝底`
-- **Empty Markdown** -> 閫貊 `EmailAnalyzer.get_entity_context()` ??鋆???
-## 4. 撽?皜 (Validation Checklist)
-- [ ] ??375px ??撖砍漲銝??扳?撠?摨行?虫??嗆??堆?
-- [ ] ??銝駁?????? `.prose` 摰孵?臬?郊?湔嚗?- [ ] ?臬摮隞颱?銵 (Inline) ??`background` 璅??嚗?(敹??冽蝘駁)
+當後端傳回缺失數據時，UI 必須以優雅的方式進行替換，嚴禁直接顯示 `Unknown` 或 `0`。
+
+- **Unknown Sender** -> `系統匿名寄件者`
+- **Unknown Time** -> `日期不詳`
+- **佈局**: Margin/Padding 符合 4px 倍數，卡片具備細微懸浮感。
+- **演化教訓**: 
+    - UI 狀態必須與後端數據編碼同步。
+    - 在編碼修復期間，前端 404 應被視為數據重建的正常中間狀態，而非系統性故障。
+調用 `EmailAnalyzer.get_entity_context()` 進行即時補完。
+
+## 4. 驗證清單 (Validation Checklist)
+- [ ] 在 375px 行動裝置寬度下，正文與背景的對比度是否符合 WCAG AA 標準？
+- [ ] 切換模式時，所有 `.prose` 容器是否同步更新？
+- [ ] 是否存在任何行內 (Inline) 的 `style` 屬性？（必須移除）
+
+---
+*Created by Antigravity - 專為工業知識圖譜設計的視覺守則*

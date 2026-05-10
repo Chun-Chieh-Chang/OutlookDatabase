@@ -18,8 +18,11 @@ import sys
 import io
 
 # Fix Windows encoding
-if sys.platform == "win32":
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if sys.stdout and hasattr(sys.stdout, 'buffer'):
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    except:
+        pass
 
 # Paths
 RAW_DIR = 'raw/emails'
@@ -49,7 +52,7 @@ def load_ontology():
 
 ONTOLOGY = load_ontology()
 
-# Multi-dimensional Semantic Mapping (HR, PQC, QMS, 4M1E...) - Dynamic fallback
+# Multi-dimensional Semantic Clustering (HR, PQC, QMS, Contextual Domains...) - Dynamic fallback
 DIM_MAP = {
     'man': 'man',
     'machine': 'machine',
@@ -237,12 +240,12 @@ def update_wiki_page_v2(directory, canonical_name, dim_data, source_email, analy
                     synthesized = re.sub(r'^```(?:markdown)?\s*', '', synthesized)
                     synthesized = re.sub(r'\s*```$', '', synthesized)
                 
-                with open(filepath, 'w', encoding='utf-8') as f:
+                with open(filepath, 'w', encoding='utf-8-sig') as f:
                     f.write(synthesized)
                 return filename
 
         # Fallback to Append mode if no analyzer or synthesis failed
-        with open(filepath, 'a', encoding='utf-8') as f:
+        with open(filepath, 'a', encoding='utf-8-sig') as f:
             f.write(f"\n\n### Record (Source: {source_email})\n")
             if description:
                 f.write(f"{description}\n")
@@ -256,7 +259,8 @@ def update_wiki_page_v2(directory, canonical_name, dim_data, source_email, analy
         # Create mode: write full page with YAML frontmatter
         now = datetime.now().strftime('%Y-%m-%d')
         
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, 'w', encoding='utf-8-sig') as f:
+
             # YAML Frontmatter
             f.write("---\n")
             f.write(f"title: \"{canonical_name}\"\n")
@@ -359,9 +363,6 @@ def build_wiki():
         print("AI service not available. Wiki building suspended.")
         return
     
-    email_files = glob.glob(os.path.join(RAW_DIR, "*.json"))
-    print(f"Found {len(email_files)} raw emails.")
-    
     # Load persistent state
     processed_emails = get_processed_emails()
     alias_registry = load_alias_registry()
@@ -375,33 +376,50 @@ def build_wiki():
     new_emails = []
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else 100
     
-    for email_file in email_files:
-        if len(new_emails) >= limit:
-            break
-            
     print(f"🔍 正在掃描本地原始數據目錄: {RAW_DIR} ...", flush=True)
-    all_emails = glob.glob(os.path.join(RAW_DIR, '*.json'))
-    print(f"📊 發現共 {len(all_emails)} 封原始郵件，正在進行增量同步檢查...", flush=True)
     
-    new_emails = []
+    # Use os.scandir for high performance
+    all_emails = []
+    with os.scandir(RAW_DIR) as it:
+        for entry in it:
+            if entry.is_file() and entry.name.endswith('.json'):
+                all_emails.append(entry.path)
+    
+    print(f"📊 發現共 {len(all_emails)} 封原始郵件，篩選前 {limit} 封...", flush=True)
+    
     for email_file in all_emails:
         if len(new_emails) >= limit:
             break
             
-        # Robustness: Skip empty or corrupt files
-        if os.path.getsize(email_file) == 0:
-            continue
-
-        try:
-            # Check if processed without reading the whole file first for speed
-            eid = os.path.basename(email_file).replace('.json', '')
-            if eid not in processed_emails:
-                with open(email_file, 'r', encoding='utf-8') as f:
+        eid = os.path.basename(email_file).replace('.json', '')
+        if eid not in processed_emails:
+            try:
+                if os.path.getsize(email_file) == 0:
+                    continue
+                with open(email_file, 'r', encoding='utf-8-sig') as f:
                     data = json.load(f)
                 new_emails.append((email_file, data))
-        except:
-            continue
-    
+                
+                processed_count += 1
+                elapsed = time.time() - start_time
+                percentage = min(100, int((processed_count / total_emails) * 100))
+                
+                # 寫入結構化進度檔案供 UI 讀取
+                progress_data = {
+                    "percentage": percentage,
+                    "processed": processed_count,
+                    "total": total_emails,
+                    "elapsed_seconds": int(elapsed),
+                    "status": "Loading..."
+                }
+                with open('logs/progress.json', 'w', encoding='utf-8') as pf:
+                    json.dump(progress_data, pf)
+
+                if len(new_emails) % 10 == 0:
+                    print(f"  -> 已加載 {len(new_emails)} 封郵件... ({percentage}% | 耗時: {int(elapsed)}s)", flush=True)
+            except Exception as e:
+                continue
+
     if not new_emails:
         print("✅ 確效完成：所有本地資料已結構化，無需重複建構。", flush=True)
         return
