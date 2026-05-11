@@ -21,20 +21,26 @@ if sys.platform == "win32":
 class EmailAnalyzer:
     def __init__(self, config_file='ai_config.json'):
         """初始化分析器"""
-        self.load_config(config_file)
+        self.config_path = config_file
+        self.refresh_config()
+        
+    def refresh_config(self):
+        """[Hot-Reload] 動態重新載入配置，確保 UI 變更即時生效"""
+        self.load_config(self.config_path)
         self.provider = self.config.get('provider', 'ollama')
         
         # Ollama Config
         self.ollama_url = self.config.get('ollama', {}).get('url', 'http://localhost:11434')
         self.ollama_model = self.config.get('ollama', {}).get('model', 'gemma4:e4b')
-        self.ollama_timeout = self.config.get('ollama', {}).get('timeout') or self.config.get('timeout', 300)
+        self.ollama_timeout = self.config.get('ollama', {}).get('timeout') or 300
         
         # Google Config
         self.google_api_key = self.config.get('google', {}).get('api_key', '')
-        self.google_model = self.config.get('google', {}).get('model', 'gemini-1.5-flash')
+        self.google_model = self.config.get('google', {}).get('model', 'gemini-3-flash')
         
         # Current Active Model Info
         self.model = self.google_model if self.provider == 'google' else self.ollama_model
+        print(f"  [Config Sync] Provider: {self.provider} | Model: {self.model} | Timeout: {self.ollama_timeout}s")
         
     def load_config(self, config_file):
         """載入設定檔"""
@@ -60,7 +66,8 @@ class EmailAnalyzer:
             return False
     
     def call_ollama(self, prompt, system_prompt=None):
-        """AI 呼叫調度器"""
+        """AI 呼叫調度器 (具備 Hot-Reload)"""
+        self.refresh_config() # 每次呼叫前確保配置是最新的
         if self.provider == 'google':
             return self.call_gemini(prompt, system_prompt)
         

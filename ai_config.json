@@ -2,19 +2,17 @@
   "provider": "ollama",
   "ollama": {
     "url": "http://localhost:11434",
-    "model": "gemma4:e4b",
-    "timeout": 30
+    "model": "gemini-3-flash",
+    "timeout": 300
   },
   "google": {
-    "api_key": "test-key-123",
-    "model": "gemini-1.5-flash"
+    "api_key": "",
+    "model": "gemini-3-flash",
+    "timeout": 300
   },
   "analysis": {
-    "max_email_length": 2000,
-    "batch_size": 5,
+    "max_email_length": 5000,
+    "batch_size": 10,
     "cache_results": true
-  },
-  "api_key": "test-key-123",
-  "model": "gemini-1.5-flash",
-  "timeout": 30
+  }
 }

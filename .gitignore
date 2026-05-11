@@ -8,5 +8,11 @@ __pycache__/
 *.csv
 *.png
 .env
+# Build and Modules
 build/
 dist/
+node_modules/
+*.spec
+.venv/
+.gemini/
+*.log

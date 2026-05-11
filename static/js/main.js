@@ -652,22 +652,33 @@ function backToGrid() {
 
 async function saveSettings() {
     const config = {
-        provider: UI.get('settingProvider').value
+        provider: UI.get('settingProvider').value,
+        ollama: {
+            model: UI.get('settingOllamaModel').value,
+            timeout: parseInt(UI.get('settingTimeout').value)
+        },
+        google: {
+            api_key: UI.get('settingGoogleKey').value,
+            model: UI.get('settingGoogleModel').value,
+            timeout: parseInt(UI.get('settingTimeout').value)
+        }
     };
+    
+    UI.log('正在更新核心配置並重啟 AI 引擎...');
     try {
-        await fetch('/api/ai_config_update', {
+        const resp = await fetch('/api/ai_config_update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
         });
-        UI.log('配置已儲存，正在重新初始化...');
+        const data = await resp.json();
+        UI.log('配置已儲存：' + (data.available ? 'AI 在線' : 'AI 離線'), data.available ? 'success' : 'error');
         closeSettings();
+        // 觸發後端重啟分析器
+        await fetch('/api/ai_reconnect', { method: 'POST' });
         location.reload();
     } catch (err) { UI.log('配置儲存失敗', 'error'); }
 }
-
-function openSettings() { UI.show('settingsModal'); }
-function closeSettings() { UI.hide('settingsModal'); }
 
 
 async function runKnowledgeMapping() {
