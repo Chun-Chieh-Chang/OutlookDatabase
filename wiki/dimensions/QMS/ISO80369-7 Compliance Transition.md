@@ -13,3 +13,6 @@ Global compliance project transitioning to the 2nd edition of ISO80369-7 for Lue
 
 ## 🔗 專業關聯
 - **Collaborator**: [[Becton Dickinson (BD)]]
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

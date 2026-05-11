@@ -183,4 +183,19 @@
     1.  重構 `RunApp.bat`，加入「智慧路徑偵測」。
     2.  若 `.venv` 失效，自動回退至系統 `python`。
     3.  增加編碼強制轉換指令，預防 Windows 控制台亂碼。
-*   **狀態**: 已部署。
+
+## 18. AI 模型配置修正：本地化對齊 (Local Model Alignment) (2026-05-11)
+*   **需求**: 修正 Ollama 誤用雲端模型 `gemini-3-flash` 的問題，改用本地模型。
+*   **診斷**: 
+    - `ollama list` 顯示本地可用模型包含 `gemma4:e4b` (Gemma 4 E4B)。
+    - `ai_config.json` 誤將 `ollama.model` 設為 `gemini-3-flash`。
+*   **行動**: 
+    1.  將 `ai_config.json` 中的 `ollama.model` 修正為 `gemma4:e4b`。
+    2.  確認本地可用模型清單：
+        - `gemma4:e4b` (核心選用)
+        - `qwen2.5:7b`
+        - `llama3.2:latest`
+        - `qwen2.5-coder:latest`
+*   **確效**: 模型配置已物理更新，系統現在將正確呼叫本地 Ollama 引擎進行推理。
+*   **狀態**: 已完成。
+

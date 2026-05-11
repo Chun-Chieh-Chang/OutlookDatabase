@@ -14,3 +14,6 @@ Candidate for Quality Control Inspector. 36 years old with 16-17 years of experi
 ## 🔗 專業關聯
 - **Interviewed by**: [[Mike Chen]]
 - **Applicant**: [[Mouldex Co., Ltd.]]
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

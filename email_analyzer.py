@@ -344,11 +344,14 @@ Content: {new_evidence}
         if os.path.exists('wiki'):
             for root, dirs, files in os.walk('wiki'):
                 for file in files:
-                    if file.endswith('.md') and any(kw.lower() in file.lower() for kw in query.split()):
-                        with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
-                            matched_pages.append(f"Entity [{file}]:\n{f.read()}")
-                            if len(matched_pages) >= 5: break
-                if len(matched_pages) >= 5: break
+                    if file.endswith('.md'):
+                        entity_name = file.lower().replace('.md', '')
+                        # [Optimization] Check if entity name is in query OR if any query part is in entity name
+                        if entity_name in query.lower() or any(kw.lower() in entity_name for kw in query.split()):
+                            with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
+                                matched_pages.append(f"Entity [{file}]:\n{f.read()}")
+                                if len(matched_pages) >= 10: break
+                if len(matched_pages) >= 10: break
         wiki_context = "\n---\n".join(matched_pages)
 
         system_prompt = (

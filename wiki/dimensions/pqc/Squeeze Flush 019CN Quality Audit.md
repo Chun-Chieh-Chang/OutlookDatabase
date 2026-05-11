@@ -11,3 +11,6 @@ updated: 2026-05-10
 ## 📝 技術描述
 Continuous quality monitoring and reporting for the Squeeze Flush 019CN project. Includes VEM/GOM reports and gate string analysis.
 
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

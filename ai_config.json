@@ -2,7 +2,7 @@
   "provider": "ollama",
   "ollama": {
     "url": "http://localhost:11434",
-    "model": "gemini-3-flash",
+    "model": "gemma4:e4b",
     "timeout": 300
   },
   "google": {

@@ -15,3 +15,6 @@ On 2025/05/13, Rao Yan-ping informed Tina Tsai that she would not attend the int
 ## 🔗 專業關聯
 - **Actor**: [[Rao Yan-ping]]
 - **Recipient**: [[Tina Tsai]]
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

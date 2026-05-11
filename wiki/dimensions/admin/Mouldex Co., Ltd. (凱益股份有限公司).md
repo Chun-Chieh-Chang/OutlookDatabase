@@ -13,3 +13,6 @@ Medical device manufacturer specializing in infusion sets and technical componen
 
 ## 🔗 專業關聯
 - **QC Manager**: [[Mike Chen]]
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

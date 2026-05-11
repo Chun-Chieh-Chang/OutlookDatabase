@@ -17,3 +17,6 @@ Customer complaint requiring manufacturing investigation.
 
 ## Records
 - [X3299AAM 客訴製造部調查資料](0000000084B2484667C9B844940F3764DDB2EE9504022100)
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

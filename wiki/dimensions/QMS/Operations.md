@@ -24,3 +24,6 @@
 ## 🔍 工業語義關聯
 - **關聯維度**: [[HR_Recruitment]], [[Spec_Control]], [[Project_Bioburden]]
 - **數據來源**: Antigravity Agentic Synthesis (Batch: 20260510-01)
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。

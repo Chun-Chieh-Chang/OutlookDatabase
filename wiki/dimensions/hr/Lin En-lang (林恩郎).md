@@ -13,3 +13,6 @@ Senior Quality Engineer candidate (51 years old). Extensive experience in solar 
 
 ## 🔗 專業關聯
 - **Applicant**: [[Mouldex Co., Ltd.]]
+
+
+> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。
