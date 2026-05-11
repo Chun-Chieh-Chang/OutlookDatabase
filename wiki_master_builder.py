@@ -21,7 +21,8 @@ INDEX_FILE = os.path.join(WIKI_DIR, 'index.md')
 
 def extract_frontmatter(content):
     """Extract YAML frontmatter from markdown content."""
-    match = re.search(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    content = content.lstrip('\ufeff') # Remove BOM if present
+    match = re.search(r'^---\s*\n(.*?)\n---\s*(?:\n|$)', content, re.DOTALL)
     if match:
         yaml_text = match.group(1)
         # Simple parser for the specific format we use
@@ -53,11 +54,15 @@ def generate_global_index(registry):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     sections = {
-        'projects': '🏗️ Projects',
+        'project': '🏗️ Projects',
         'org': '🏢 Organizations',
-        'artifact': '📄 Artifacts & Reports',
-        'domain': '🧠 Technical Domains',
-        'quality': '🛠️ Improvements (CAPA)',
+        'hr': '👥 Human Resources (HR)',
+        'QMS': '🛡️ Quality Management (QMS)',
+        'pqc': '🔍 Process Quality (PQC)',
+        'spec': '📋 Technical Specs (Spec)',
+        'admin': '📁 Administration',
+        'events': '🗓️ Events & Timeline',
+        'environment': '🌍 Environment & Facility',
         'lifecycle': '🔄 Lifecycle (PDCA)'
     }
     
@@ -74,7 +79,7 @@ def generate_global_index(registry):
 
     # Category Sections
     for cat, title in sections.items():
-        items = [m for m in registry if m.get('type') == cat]
+        items = [m for m in registry if m.get('type') == cat or m.get('category') == cat]
         if items:
             content += f"## {title}\n"
             for m in items[:15]: # Limit to 15 per section in index

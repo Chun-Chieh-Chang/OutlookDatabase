@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='OutlookRelay_ULTRA',
+    name='Mouldex_Relay_ULTRA_v3',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

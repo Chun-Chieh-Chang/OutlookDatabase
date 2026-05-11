@@ -83,6 +83,9 @@ def build_obsidian_graph():
                     })
 
     # 2. Second Pass: Parse links and tags
+    print("   -> Parsing explicit [[links]] and aliases...")
+    alias_map = {n['name'].lower(): n['id'] for n in nodes}
+    
     for root, dirs, files in os.walk(WIKI_DIR):
         for f in files:
             if f.endswith('.md') and f.lower() not in ['index.md', 'log.md']:
@@ -90,46 +93,38 @@ def build_obsidian_graph():
                 path = os.path.join(root, f)
                 with open(path, 'r', encoding='utf-8-sig') as file:
                     content = file.read()
-                    
-                    # Find [[Links]]
-                    found_links = re.findall(r'\[\[(.*?)\]\]', content)
-                    # Find [MarkdownLinks](target)
-                    found_md_links = re.findall(r'\[.*?\]\((.*?)\)', content)
-                    
-                    all_targets = found_links + found_md_links
-                    
+                    all_targets = re.findall(r'\[\[(.*?)\]\]', content)
                     for target in all_targets:
-                        # Handle potential display text [[Path|Display]]
                         target_name = target.split('|')[0].strip()
-                        # Handle potential file extension/path in Markdown links
-                        target_id = target_name.replace('.md', '').split('/')[-1]
-                        
-                        if target_id == source_id: continue # Skip self-links
-                        
-                        # Create link
-                        links.append({"source": source_id, "target": target_id})
-                        
-                        # Handle Unresolved Links
-                        if target_name not in node_set and target_id not in [n['id'] for n in nodes]:
-                            nodes.append({
-                                "id": target_id,
-                                "name": target_name,
-                                "val": 5,
-                                "color": COLOR_PALETTE['unresolved'],
-                                "type": "unresolved",
-                                "exists": False
-                            })
-                            node_set[target_name] = target_id
+                        target_id = alias_map.get(target_name.lower()) or target_name.replace('.md', '').split('/')[-1]
+                        if target_id in [n['id'] for n in nodes] and target_id != source_id:
+                            links.append({"source": source_id, "target": target_id})
 
-    # 3. Clean up and Export
+    # 3. Third Pass: DATABASE CO-OCCURRENCE (The Real Power)
+    print("   -> Mining Email Database for hidden co-occurrence links...")
+    import sqlite3
+    try:
+        conn = sqlite3.connect('emails.db')
+        c = conn.cursor()
+        # Sample nodes to find strong relationships
+        for i in range(0, len(nodes), 10): 
+            n1 = nodes[i]
+            for j in range(i+1, min(i+50, len(nodes))):
+                n2 = nodes[j]
+                c.execute("SELECT COUNT(*) FROM emails WHERE body LIKE ? AND body LIKE ?", (f'%{n1["name"]}%', f'%{n2["name"]}%'))
+                count = c.fetchone()[0]
+                if count > 3: # Relationship threshold
+                    links.append({"source": n1['id'], "target": n2['id'], "weight": count})
+        conn.close()
+    except Exception as e:
+        print(f"   WARN: Database co-occurrence failed: {e}")
+
+    # 4. Clean up and Export
     graph = {"nodes": nodes, "links": links}
-    
-    # Save to Wiki directory for frontend to pick up
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as out:
         json.dump(graph, out, ensure_ascii=False, indent=2)
     
-    print(f"✅ Obsidian-style graph generated with {len(nodes)} nodes and {len(links)} edges.")
-    print(f"📍 File saved at: {OUTPUT_FILE}")
+    print(f"✅ Enhanced Graph generated with {len(nodes)} nodes and {len(links)} links.")
 
 if __name__ == "__main__":
     build_obsidian_graph()

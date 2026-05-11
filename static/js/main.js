@@ -9,7 +9,9 @@ const AppState = {
     limit: 12,
     wikiData: [],
     currentView: 'dashboard',
-    lastSyncNodeCount: 0
+    lastSyncNodeCount: 0,
+    selectedEmails: new Set(),
+    prunePage: 1
 };
 
 const UI = {
@@ -62,7 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
         loadDashboardStats();
         checkAIStatus();
         pollSystemLogs();
-    }, 4000); // 縮短為 4 秒一次，提升動態感
+        updateSynthesisProgress();
+    }, 4000); 
+
+    // [終極解決方案] 全域事件委派：攔截所有對導入按鈕的點擊
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#importBundleBtn');
+        if (btn) {
+            UI.log('📡 偵測到物理點擊：啟動導入程序');
+            importBundle();
+        }
+    });
 });
 
 let lastLogLines = [];
@@ -208,7 +220,9 @@ async function init3DGraph() {
                 closeView('3d'); showView('wiki'); loadWikiPage(node.id + '.md');
             });
 
-        graphInstance.d3Force('link').distance(60);
+        graphInstance.d3Force('link').distance(800).strength(0.005);
+        graphInstance.d3Force('charge').strength(-10000);
+        graphInstance.linkOpacity(0.1); // 大幅淡化連線，防止疊加發光
         graphInstance.controls().autoRotate = true;
 
         // [Premium UX] 實作游標基準縮放 (Zoom to Cursor)
@@ -269,15 +283,127 @@ function showView(v) {
     AppState.currentView = v;
     UI.log(`切換導航: ${v.toUpperCase()}`);
     
-    // Hide all views including the new sync and manual views
-    ['view-dashboard', 'view-wiki', 'view-3d', 'view-sync', 'view-manual', 'view-devlog'].forEach(id => UI.hide(id));
+    // Hide all views
+    ['view-dashboard', 'view-wiki', 'view-3d', 'view-sync', 'view-manual', 'view-devlog', 'view-prune'].forEach(id => UI.hide(id));
     
     if (v === 'dashboard') { UI.show('view-dashboard'); }
     else if (v === 'wiki') { UI.show('view-wiki'); loadWikiIndex(); }
     else if (v === '3d') { UI.show('view-3d'); init3DGraph(); }
     else if (v === 'sync') { UI.show('view-sync'); }
+    else if (v === 'prune') { UI.show('view-prune'); loadPruneList(); }
     else if (v === 'manual') { UI.show('view-manual'); loadManual(); }
     else if (v === 'devlog') { UI.show('view-devlog'); loadDevLog(); }
+}
+
+async function loadPruneList(page = 1) {
+    AppState.prunePage = page;
+    UI.log(`載入待清理數據 (第 ${page} 頁)...`);
+    try {
+        const resp = await fetch(`/api/emails/recent_list?page=${page}&limit=50`);
+        const data = await resp.json();
+        
+        const tbody = document.getElementById('pruneListBody');
+        const pagination = document.getElementById('prunePagination');
+        
+        if (!tbody) return;
+
+        tbody.innerHTML = data.emails.map(e => `
+            <tr class="hover:bg-slate-50/80 transition-colors group">
+                <td class="p-4 text-center">
+                    <input type="checkbox" data-id="${e.entry_id}" onchange="toggleEmailSelection(this)" ${AppState.selectedEmails.has(e.entry_id) ? 'checked' : ''} class="email-checkbox w-4 h-4 rounded border-slate-300">
+                </td>
+                <td class="p-4">
+                    <div class="font-bold text-slate-700 text-xs">${e.sender_name}</div>
+                    <div class="text-[10px] text-slate-400 mt-1">${e.received_time}</div>
+                </td>
+                <td class="p-4">
+                    <div class="font-bold text-slate-800 text-sm mb-1">${e.subject}</div>
+                    <div class="text-xs text-slate-500 line-clamp-1">${e.snippet}...</div>
+                </td>
+                <td class="p-4 text-center">
+                    <button onclick="deleteSingleEmail('${e.entry_id}')" class="text-slate-300 hover:text-rose-500 transition-colors">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+        
+        // Render Pagination
+        pagination.innerHTML = `
+            <div class="text-xs text-slate-400">顯示第 ${page} 頁，共 ${data.total} 封</div>
+            <div class="flex gap-2">
+                <button onclick="loadPruneList(${page - 1})" ${page === 1 ? 'disabled' : ''} class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs disabled:opacity-30">上一頁</button>
+                <button onclick="loadPruneList(${page + 1})" ${page === data.pages || data.pages === 0 ? 'disabled' : ''} class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs disabled:opacity-30">下一頁</button>
+            </div>
+        `;
+        
+        updateSelectedUI();
+    } catch (err) { UI.log('清理清單讀取失敗', 'error'); }
+}
+
+function toggleEmailSelection(el) {
+    const id = el.dataset.id;
+    if (AppState.selectedEmails.has(id)) AppState.selectedEmails.delete(id);
+    else AppState.selectedEmails.add(id);
+    updateSelectedUI();
+}
+
+function toggleSelectAll(cb) {
+    const boxes = document.querySelectorAll('.email-checkbox');
+    boxes.forEach(box => {
+        const id = box.dataset.id;
+        box.checked = cb.checked;
+        if (cb.checked) AppState.selectedEmails.add(id);
+        else AppState.selectedEmails.delete(id);
+    });
+    updateSelectedUI();
+}
+
+function updateSelectedUI() {
+    const btn = document.getElementById('btnDeleteSelected');
+    const count = document.getElementById('selectedCount');
+    if (btn) btn.disabled = AppState.selectedEmails.size === 0;
+    if (count) count.textContent = AppState.selectedEmails.size;
+}
+
+function openDeleteModal() {
+    UI.show('deleteModal');
+    const count = document.getElementById('modalDeleteCount');
+    if (count) count.textContent = AppState.selectedEmails.size;
+}
+
+function closeDeleteModal() {
+    UI.hide('deleteModal');
+}
+
+function deleteSelectedEmails() {
+    if (AppState.selectedEmails.size === 0) return;
+    openDeleteModal();
+}
+
+async function confirmDelete() {
+    const ids = Array.from(AppState.selectedEmails);
+    closeDeleteModal();
+    
+    UI.log(`正在刪除 ${ids.length} 封郵件...`, 'warning');
+    try {
+        const resp = await fetch('/api/emails/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+        });
+        const data = await resp.json();
+        UI.log(data.message, 'success');
+        AppState.selectedEmails.clear();
+        loadPruneList(AppState.prunePage);
+        loadDashboardStats();
+    } catch (err) { UI.log('刪除失敗', 'error'); }
+}
+
+async function deleteSingleEmail(id) {
+    AppState.selectedEmails.clear();
+    AppState.selectedEmails.add(id);
+    openDeleteModal();
 }
 
 function reset3DView() {
@@ -523,14 +649,6 @@ function backToGrid() {
     UI.hide('wikiPageContainer');
 }
 
-function toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    const next = isDark ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    UI.get('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    UI.log(`切換主題至: ${next.toUpperCase()}`);
-}
 
 async function saveSettings() {
     const config = {
@@ -550,6 +668,31 @@ async function saveSettings() {
 
 function openSettings() { UI.show('settingsModal'); }
 function closeSettings() { UI.hide('settingsModal'); }
+
+
+async function runKnowledgeMapping() {
+    const status = UI.get('pipelineStatus');
+    if (!status) return;
+    status.textContent = '🚀 啟動獨立知識圖譜重構 (正在處理過濾後的數據)...\n';
+    
+    const eventSource = new EventSource('/api/pipeline/build_wiki_stream');
+    eventSource.onmessage = (event) => {
+        if (event.data === 'heartbeat') return;
+        status.textContent += event.data;
+        status.scrollTop = status.scrollHeight;
+        if (event.data.includes('✅ 知識圖譜重構完成')) {
+            eventSource.close();
+            UI.log('知識圖譜重構完成', 'success');
+            loadDashboardStats();
+            loadWikiIndex();
+        }
+    };
+    eventSource.onerror = (err) => {
+        status.textContent += '\n❌ 任務中斷。\n';
+        eventSource.close();
+        UI.log('任務執行失敗', 'error');
+    };
+}
 
 async function runPipeline() {
     const status = UI.get('pipelineStatus');
@@ -660,3 +803,130 @@ async function loadWikiIndex() {
         UI.log('索引讀取失敗: ' + err.message, 'error');
     }
 }
+
+async function importBundle() {
+    const btn = document.getElementById('importBundleBtn');
+    if (!btn) return;
+    const originalText = btn.innerHTML;
+    
+    // 移除 confirm 以避開瀏覽器攔截
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> 正在導入...';
+    UI.log('正在啟動數據包導入管道...', 'warning');
+    
+    try {
+        const response = await fetch('/api/pipeline/import_bundle', { method: 'POST' });
+        const data = await response.json();
+        
+        if (response.ok) {
+            UI.log('✅ ' + data.message, 'success');
+            alert(data.message);
+            location.reload(); 
+        } else {
+            UI.log('❌ ' + data.error, 'error');
+            alert("導入失敗: " + data.error);
+        }
+    } catch (err) {
+        UI.log('❌ 網路連接異常', 'error');
+        alert("網路連接異常");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+window.importBundle = importBundle;
+
+async function uploadBundle(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    UI.log('正在上傳數據包: ' + file.name, 'warning');
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/pipeline/upload_bundle', { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        if (response.ok) {
+            UI.log('✅ ' + data.message, 'success');
+            // 自動觸發導入程序
+            location.reload(); 
+        } else {
+            UI.log('❌ 上傳失敗: ' + data.error, 'error');
+        }
+    } catch (err) {
+        UI.log('❌ 網路異常: ' + err.message, 'error');
+    }
+}
+
+window.uploadBundle = uploadBundle;
+
+async function updateSynthesisProgress() {
+    try {
+        const resp = await fetch('/api/wiki/synthesis_progress?t=' + Date.now());
+        const data = await resp.json();
+        const bar = document.getElementById('synthProgressBar');
+        const text = document.getElementById('synthProgressText');
+        const btn = document.getElementById('btnBatchSynth');
+        
+        if (bar) bar.style.width = data.percentage + '%';
+        if (text) text.innerText = data.completed + ' / ' + data.total + ' (' + data.percentage + '%)';
+        
+        if (btn && data.percentage === 100 && data.total > 0) {
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> 全量合成已達成';
+            btn.className = 'p-3 px-6 rounded-xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed flex items-center gap-2';
+            btn.onclick = null;
+        }
+    } catch (e) {}
+}
+window.updateSynthesisProgress = updateSynthesisProgress;
+
+function initDraggableTicker() {
+    const ticker = document.getElementById('status-ticker');
+    if (!ticker) return;
+
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    ticker.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+        
+        ticker.style.transition = 'none'; // Disable transition during drag
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        ticker.style.top = (ticker.offsetTop - pos2) + "px";
+        ticker.style.left = (ticker.offsetLeft - pos1) + "px";
+        ticker.style.bottom = 'auto'; // Remove fixed constraints
+        ticker.style.right = 'auto';
+    }
+
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+        ticker.style.transition = 'all 0.3s ease'; // Re-enable if needed, though usually not for drag
+    }
+}
+
+// Global Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    initDraggableTicker();
+});

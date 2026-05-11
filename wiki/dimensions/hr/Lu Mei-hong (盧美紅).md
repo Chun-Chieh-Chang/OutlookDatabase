@@ -1,0 +1,14 @@
+﻿---
+title: Lu Mei-hong (盧美紅)
+category: hr
+type: hr
+tags: #Multilingual, #hr
+urgency: normal
+updated: 2026-05-10
+---
+
+# Lu Mei-hong (盧美紅)
+
+## 📝 技術描述
+QC candidate (45 years old). Trilingual (English, Chinese, Indonesian). 15 years experience in electronic manufacturing.
+

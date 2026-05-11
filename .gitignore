@@ -1,5 +1,5 @@
 # Data and Privacy
-emails.db
+*.db
 raw/
 wiki_v1_backup/
 sync.ffs_db
@@ -8,3 +8,5 @@ __pycache__/
 *.csv
 *.png
 .env
+build/
+dist/

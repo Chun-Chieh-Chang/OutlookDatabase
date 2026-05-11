@@ -96,9 +96,36 @@ def get_wiki_stats():
 @app.route('/')
 def index():
     db_exists = os.path.exists('emails.db')
+    bundle_exists = os.path.exists('sync_bundle.db')
     return render_template('index.html', 
                            db_exists_js='true' if db_exists else 'false',
+                           bundle_exists=bundle_exists,
                            v=int(time.time()))
+
+@app.route('/api/wiki/synthesis_progress')
+def api_synthesis_progress():
+    total = 0
+    completed = 0
+    wiki_root = 'wiki'
+    if os.path.exists(wiki_root):
+        for root, dirs, files in os.walk(wiki_root):
+            for f in files:
+                if f.endswith('.md') and f.lower() not in ['index.md', 'log.md', 'extraction_pulse.txt']:
+                    total += 1
+                    # 檢查內容是否已包含深度總結（即不含預設標記）
+                    try:
+                        path = os.path.join(root, f)
+                        with open(path, 'r', encoding='utf-8-sig', errors='ignore') as file:
+                            content = file.read()
+                            if '即時總結' not in content:
+                                completed += 1
+                    except: pass
+    
+    return jsonify({
+        'total': total,
+        'completed': completed,
+        'percentage': round((completed / total * 100), 1) if total > 0 else 0
+    })
 
 @app.route('/api/dashboard_stats')
 def dashboard_stats():
@@ -150,6 +177,62 @@ def get_stats():
         error_msg = traceback.format_exc()
         print(f"CRITICAL ERROR in /api/stats:\n{error_msg}")
         return jsonify({'error': str(e), 'traceback': error_msg}), 500
+
+@app.route('/api/emails/recent_list')
+def get_recent_emails_list():
+    try:
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 50))
+        offset = (page - 1) * limit
+        
+        conn = get_connection()
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get total count for pagination
+        cursor.execute("SELECT COUNT(*) FROM emails")
+        total = cursor.fetchone()[0]
+        
+        # Get recent emails with snippet
+        cursor.execute("""
+            SELECT entry_id, subject, sender_name, received_time, substr(body, 1, 200) as snippet 
+            FROM emails 
+            ORDER BY received_time DESC 
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
+        
+        rows = cursor.fetchall()
+        emails = [dict(row) for row in rows]
+        conn.close()
+        
+        return jsonify({
+            'emails': emails,
+            'total': total,
+            'page': page,
+            'pages': (total + limit - 1) // limit
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/emails/delete', methods=['POST'])
+def delete_emails():
+    try:
+        data = request.get_json()
+        ids = data.get('ids', [])
+        if not ids:
+            return jsonify({'error': 'No IDs provided'}), 400
+            
+        conn = get_connection()
+        cursor = conn.cursor()
+        placeholders = ','.join(['?'] * len(ids))
+        cursor.execute(f"DELETE FROM emails WHERE entry_id IN ({placeholders})", ids)
+        conn.commit()
+        count = cursor.rowcount
+        conn.close()
+        
+        return jsonify({'message': f'成功刪除 {count} 封郵件', 'count': count})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/search', methods=['POST'])
 def search_emails():
@@ -308,6 +391,64 @@ def ai_reconnect():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/pipeline/upload_bundle', methods=['POST'])
+def api_upload_bundle():
+    if 'file' not in request.files:
+        return jsonify({'error': '未偵測到檔案'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': '未選擇檔案'}), 400
+    
+    if file and file.filename.endswith('.db'):
+        save_path = 'sync_bundle.db'
+        file.save(save_path)
+        return jsonify({'message': '數據包上傳成功，準備合併。'})
+    
+    return jsonify({'error': '不支援的檔案格式，請上傳 .db 檔案'}), 400
+
+@app.route('/api/pipeline/import_bundle', methods=['POST'])
+def api_import_bundle():
+    bundle_path = 'sync_bundle.db'
+    if not os.path.exists(bundle_path):
+        return jsonify({'error': '找不到 sync_bundle.db 檔案，請確保檔案已放在根目錄。'}), 404
+        
+    try:
+        conn_main = get_connection()
+        conn_bundle = sqlite3.connect(bundle_path)
+        
+        # Get emails from bundle
+        c_bundle = conn_bundle.cursor()
+        c_bundle.execute("SELECT entry_id, subject, sender_name, received_time, body, folder FROM emails")
+        rows = c_bundle.fetchall()
+        
+        c_main = conn_main.cursor()
+        imported = 0
+        skipped = 0
+        
+        for row in rows:
+            try:
+                c_main.execute("INSERT INTO emails (entry_id, subject, sender_name, received_time, body, folder) VALUES (?, ?, ?, ?, ?, ?)", row)
+                imported += 1
+            except sqlite3.IntegrityError:
+                skipped += 1
+                
+        conn_main.commit()
+        conn_main.close()
+        conn_bundle.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'導入完成！成功匯入 {imported} 封郵件，跳過 {skipped} 封重複郵件。'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/pipeline/run_sync', methods=['POST'])
+def pipeline_run_sync():
+    success = pipeline_mgr.run('sync')
+    return jsonify({'success': success, 'message': 'Sync started' if success else 'Pipeline already running'})
+
 @app.route('/api/pipeline/stop', methods=['POST'])
 def pipeline_stop():
     success = pipeline_mgr.stop()
@@ -363,6 +504,28 @@ def pipeline_stream():
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Connection'] = 'keep-alive'
     return resp
+
+@app.route('/api/pipeline/build_wiki_stream')
+def pipeline_build_wiki_stream():
+    def generate():
+        python_exe = sys.executable
+        yield "data: 🧠 啟動知識圖譜重構 (正在套用過濾後的數據)...\n\n"
+        try:
+            # Run wiki_builder.py
+            process = pipeline_mgr.run([python_exe, 'wiki_builder.py', '50'])
+            while True:
+                line = process.stdout.readline()
+                if not line and process.poll() is not None: break
+                if line: yield f"data: {line.strip()}\n\n"
+                else:
+                    yield "data: heartbeat\n\n"
+                    time.sleep(1)
+            yield "data: ✅ 知識圖譜重構完成。\n\n"
+        except Exception as e:
+            yield f"data: ❌ 錯誤: {str(e)}\n\n"
+        finally:
+            pipeline_mgr.stop()
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
 @app.route('/api/important_folders_ingest', methods=['POST'])
 def run_important_ingest():

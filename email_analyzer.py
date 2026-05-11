@@ -53,7 +53,8 @@ class EmailAnalyzer:
         if self.provider == 'google':
             return bool(self.google_api_key)
         try:
-            response = requests.get(f"{self.ollama_url}/api/tags", timeout=5)
+            # [i3 Optimization] Increased timeout to 30s for heavy model loading
+            response = requests.get(f"{self.ollama_url}/api/tags", timeout=30)
             return response.status_code == 200
         except:
             return False
@@ -129,29 +130,33 @@ class EmailAnalyzer:
         if 'negative' in result: return "負面"
         return "中性"
 
-            # [V5.0] Antigravity Mimicry - 高保真工業分析指令
-            system_prompt = """
+    def extract_entities(self, subject, body):
+        """[V5.0] Antigravity Mimicry - 高保真工業分析指令"""
+        prompt = f"Subject: {subject}\nBody: {body[:2000]}"
+        system_prompt = """
 你是 SkillsBuilder 系統的核心分析官 (Antigravity Mode)。
 你的目標是執行「高顆粒度」的工業知識提取。
 
 ## 執行指令：
-1. 識別實體：找出人名、物料代碼 (如 R1-xxx)、組織、關鍵流程。
-2. 語義分類：歸類至 [HR, QMS, Spec, Project, Training, Finance] 之一。
+1. 識別實體：找出人名、物料代碼 (如 R1-xxx)、組織、關鍵流程、徵才資訊。
+2. 語義分類：歸類至 [HR, QMS, Spec, Project, Recruitment, Admin] 之一。
+   - 若涉及 104、人力銀行、履歷、面試，請歸類為 'Recruitment'。
 3. 提取關聯：找出實體間的關係 (如 "隸屬於", "負責面試", "修正規格")。
-4. 排除雜訊：過濾廣告、系統通知與非技術性閒談。
+4. 排除雜訊：過濾廣告、系統通知。
 
 ## 輸出格式：
 必須回傳純 JSON 格式，包含 {"dimensions": [{"name": "...", "category": "...", "description": "...", "relationships": [{"target": "...", "type": "..."}]}]}
 """
-            result = self.call_ollama(prompt, system_prompt)
+        try:
+            result = self.call_ai(prompt, system_prompt)
             if "error" not in result.lower():
-                # (Existing JSON parsing logic simplified for brevity here, assume original logic remains)
                 match = re.search(r'\{.*\}', result, re.DOTALL)
                 if match:
                     parsed = json.loads(match.group(0))
                     if parsed.get("dimensions"):
                         return parsed
-        except:
+        except Exception as e:
+            print(f"Extraction Error: {e}")
             pass
 
         # --- Phase 2: Heuristic Fallback (Regex) ---
@@ -183,12 +188,32 @@ class EmailAnalyzer:
             
         return {"dimensions": entities}
 
+    def is_noise_entity(self, name):
+        """判斷是否為無效雜訊實體"""
+        if not name or name.lower() in ['unknown', 'none', 'redacted', '未命名實體']:
+            return True
+        # 排除郵件地址
+        if '@' in name or name.endswith(('.com', '.tw', '.net', '.org')):
+            return True
+        # 排除系統關鍵字
+        noise_keywords = ['postmaster', 'suspicious', 'blocked', 'spam', 'notification', 'alert']
+        if any(kw in name.lower() for kw in noise_keywords):
+            return True
+        # 排除過長標題 (可能是誤抓的主旨)
+        if len(name) > 100:
+            return True
+        return False
+
     def save_wiki_entity(self, entity):
         """將提取的實體儲存為 Wiki 檔案 (v3: QC-Centric Structure)"""
         name = entity.get('name')
         if not name or name.lower() == 'unknown':
-            # Try to get value or type as fallback
             name = entity.get('value') or entity.get('type', '未命名實體')
+            
+        # [PDCA] 執行雜訊過濾
+        if self.is_noise_entity(name):
+            return False
+            
         name = name.strip().replace('/', '-').replace(':', '-')
         category = entity.get('category', 'others').lower()
         

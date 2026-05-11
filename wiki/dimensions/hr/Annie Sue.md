@@ -1,0 +1,12 @@
+﻿---
+title: Annie Sue
+category: hr
+tags: #hr
+urgency: normal
+updated: 2026-05-10
+---
+
+# Annie Sue
+
+## 📝 技術描述
+Legacy/Historical collaborator (837 interactions).
