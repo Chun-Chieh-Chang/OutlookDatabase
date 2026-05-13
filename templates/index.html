@@ -81,21 +81,38 @@
 </head>
 <body class="h-screen w-screen flex">
     <!-- [V3.1] STATUS TICKER - ROOT LEVEL (Now Draggable) -->
-    <div id="status-ticker" class="fixed bottom-8 right-8 z-[9999] w-72 p-5 bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] select-none cursor-move">
-        <div id="ticker-header" class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span id="pulse-dot" class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-                System Live Pulse
-            </div>
-            <span id="system-timer" class="text-slate-500 font-mono">00:00</span>
+    <div id="status-ticker" class="fixed bottom-8 right-8 z-[9999] w-80 p-6 bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] select-none cursor-move">
+        <div id="ticker-header" class="flex justify-between items-center mb-5">
+            <h2 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                <span id="pulse-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                SYSTEM LIVE PULSE
+            </h2>
+            <span id="system-timer" class="text-[10px] font-mono text-slate-400 opacity-60">00:00</span>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="h-1 w-full bg-white/10 rounded-full overflow-hidden mb-4">
-            <div id="system-progress-bar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+        <!-- Physical Progress -->
+        <div class="mb-4">
+            <div class="flex justify-between text-[10px] font-bold mb-2">
+                <span class="text-emerald-400">● PHYSICAL GROUNDING</span>
+                <span id="physical-percentage-label" class="text-emerald-400">0%</span>
+            </div>
+            <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden shadow-inner">
+                <div id="physical-progress-bar" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 ease-out" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Quality Progress -->
+        <div class="mb-5">
+            <div class="flex justify-between text-[10px] font-bold mb-2">
+                <span class="text-sky-400">● QUALITY REFINING</span>
+                <span id="quality-percentage-label" class="text-sky-400">0%</span>
+            </div>
+            <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden shadow-inner">
+                <div id="quality-progress-bar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out" style="width: 0%"></div>
+            </div>
         </div>
         
-        <div id="ticker-content" class="space-y-2">
+        <div id="ticker-content" class="space-y-2 max-h-32 overflow-hidden opacity-80">
             <!-- Messages will appear here -->
         </div>
     </div>

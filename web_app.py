@@ -104,28 +104,19 @@ def index():
 
 @app.route('/api/wiki/synthesis_progress')
 def api_synthesis_progress():
-    total = 0
-    completed = 0
-    wiki_root = 'wiki'
-    if os.path.exists(wiki_root):
-        for root, dirs, files in os.walk(wiki_root):
-            for f in files:
-                if f.endswith('.md') and f.lower() not in ['index.md', 'log.md', 'extraction_pulse.txt']:
-                    total += 1
-                    # 檢查內容是否已包含深度總結（即不含預設標記）
-                    try:
-                        path = os.path.join(root, f)
-                        with open(path, 'r', encoding='utf-8-sig', errors='ignore') as file:
-                            content = file.read()
-                            if '即時總結' not in content:
-                                completed += 1
-                    except: pass
-    
-    return jsonify({
-        'total': total,
-        'completed': completed,
-        'percentage': round((completed / total * 100), 1) if total > 0 else 0
-    })
+    try:
+        report_path = 'logs/full_audit_report.json'
+        if os.path.exists(report_path):
+            with open(report_path, 'r', encoding='utf-8') as f:
+                audit = json.load(f)
+            return jsonify({
+                'total': audit.get('total', 613),
+                'completed': audit.get('passed_count', 0),
+                'percentage': float(audit.get('pass_rate', '0%').replace('%', ''))
+            })
+        return jsonify({'total': 613, 'completed': 0, 'percentage': 0})
+    except:
+        return jsonify({'total': 613, 'completed': 0, 'percentage': 0})
 
 @app.route('/api/dashboard_stats')
 def dashboard_stats():
@@ -597,6 +588,43 @@ def ask_wiki():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/sync/incremental')
+def check_incremental_sync():
+    # 偵測是否具備實時同步環境 (Outlook 帳戶偵測)
+    has_outlook = False
+    try:
+        # 使用 subprocess 執行輕量檢查，避免主進程受 pywin32 影響
+        check_script = """
+import win32com.client
+try:
+    outlook = win32com.client.Dispatch('Outlook.Application')
+    ns = outlook.GetNamespace('MAPI')
+    if len(ns.Accounts) > 0:
+        print('TRUE')
+    else:
+        print('FALSE')
+except:
+    print('FALSE')
+"""
+        result = subprocess.run([sys.executable, '-c', check_script], capture_output=True, text=True, timeout=5)
+        if 'TRUE' in result.stdout:
+            has_outlook = True
+    except:
+        pass
+
+    if not has_outlook:
+        return jsonify({
+            'status': 'no_outlook',
+            'message': '偵測不到 Outlook 帳戶，系統已進入離線模式。',
+            'error': True
+        })
+    
+    return jsonify({
+        'status': 'active',
+        'message': '執行增量同步檢查...',
+        'error': False
+    })
+
 @app.route('/api/system_logs')
 def get_system_logs():
     log_path = 'logs/system.log'
@@ -612,14 +640,51 @@ def get_system_logs():
 
 @app.route('/api/system_progress')
 def get_system_progress():
-    progress_path = 'logs/progress.json'
-    if not os.path.exists(progress_path):
-        return jsonify({"percentage": 0, "status": "Idle"})
     try:
-        with open(progress_path, 'r', encoding='utf-8') as f:
-            return jsonify(json.load(f))
-    except:
-        return jsonify({"percentage": 0, "status": "Error"})
+        report_path = 'logs/full_audit_report.json'
+        if os.path.exists(report_path):
+            with open(report_path, 'r', encoding='utf-8') as f:
+                audit = json.load(f)
+            
+            # Read elapsed time
+            start_path = 'scratch/task_start.txt'
+            elapsed = 0
+            if os.path.exists(start_path):
+                with open(start_path, 'r') as f:
+                    start_time = float(f.read())
+                elapsed = int(time.time() - start_time)
+            
+            p_data = audit.get('physical', {})
+            q_data = audit.get('quality', {})
+            
+            return jsonify({
+                "physical_percentage": float(p_data.get('rate', '0%').replace('%', '')),
+                "quality_percentage": float(q_data.get('rate', '0%').replace('%', '')),
+                "physical_status": f"物理落盤: {p_data.get('passed', 0)}/{p_data.get('total', 613)}",
+                "quality_status": f"高品質精煉: {q_data.get('passed', 0)}/{q_data.get('total', 343)}",
+                "elapsed_seconds": elapsed
+            })
+        return jsonify({"physical_percentage": 0, "quality_percentage": 0, "status": "等待審計數據..."})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/pdca')
+def pdca_dashboard():
+    return render_template('pdca_dashboard.html')
+
+@app.route('/api/pdca/report')
+def get_pdca_report():
+    report_path = 'logs/full_audit_report.json'
+    if not os.path.exists(report_path):
+        return jsonify({"total": 0, "passed_count": 0, "pass_rate": "0%", "passed_examples": [], "failed_examples": []})
+    with open(report_path, 'r', encoding='utf-8') as f:
+        return jsonify(json.load(f))
+
+@app.route('/api/pdca/run', methods=['POST'])
+def run_pdca_audit():
+    import subprocess
+    subprocess.run(['python', 'tools/full_audit.py'])
+    return jsonify({"status": "Audit completed"})
 
 @app.route('/api/graph_data')
 def get_graph_data():
@@ -885,7 +950,19 @@ def batch_synthesize():
                             content = file.read()
                         if "點擊或開啟它時，AI 能為您即時總結。" in content:
                             freq_match = re.search(r'歷史郵件出現次數: \*\*(\d+) 次\*\*', content)
-                            freq = int(freq_match.group(1)) if freq_match else 0
+                            if freq_match:
+                                freq = int(freq_match.group(1))
+                            else:
+                                # Fallback: Count links in common record sections
+                                record_patterns = [r'## 🔗 相關引用記錄', r'## Records', r'## 🔗 專業關聯']
+                                freq = 0
+                                for pattern in record_patterns:
+                                    if pattern in content:
+                                        # Count lines starting with "- [" or "- " after the header
+                                        section_content = content.split(pattern)[1].split('##')[0]
+                                        freq = len(re.findall(r'^\s*-\s+\[?', section_content, re.MULTILINE))
+                                        break
+                                
                             targets.append({
                                 'path': os.path.relpath(path, wiki_root).replace('\\', '/'),
                                 'name': f.replace('.md', ''),

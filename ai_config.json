@@ -1,13 +1,12 @@
 {
   "provider": "ollama",
   "ollama": {
-    "url": "http://localhost:11434",
     "model": "gemma4:e4b",
-    "timeout": 300
+    "timeout": 600
   },
   "google": {
-    "api_key": "",
-    "model": "gemini-3-flash",
+    "api_key": "AIzaSyAKF6u2MtPIy3m4d4w0OYaxpafjz-uW8iU",
+    "model": "gemini-2.5-flash",
     "timeout": 300
   },
   "analysis": {

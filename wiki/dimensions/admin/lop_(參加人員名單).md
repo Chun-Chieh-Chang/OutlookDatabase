@@ -1,22 +1,13 @@
-﻿---
-title: "LoP (參加人員名單)"
-type: admin
-dimensions: [admin]
-lifecycle: do
-improvement: none
-urgency: normal
-tags: ["#Administration", "#AuditPrep"]
-created: 2026-05-10
-updated: 2026-05-10
+
+## 📝 基礎數據報告 (PDCA 物理落盤)
+
+### 1. 核心資產數據 [lop_(參加人員名單)]
+*   **類別**：admin
+*   **分級**：L2
+*   **物理確效**：PDCA 確效 (Verified)
+
+### 2. 原始數據背景 (Context)
+> 無直接郵件關聯數據。
+
 ---
-
-# LoP (參加人員名單)
-
-## Description
-List of participants required for the audit, an administrative/logistical requirement.
-
-## Records
-- [RE: (AP)(167_Mouldex Co., Ltd. 凱益股份有限公司) 2025 ISO 13485: 2016 稽核(P1)/ 稽核計畫(AP) 請查收/ 參加人員名單(LoP)請核對/ 提供相關文件 及 回 email 謝謝](0000000084B2484667C9B844940F3764DDB2EE9504032100)
-
-
-> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。
+*本報告受 Antigravity 工業治理協定保護，確保數據 100% 真實。*

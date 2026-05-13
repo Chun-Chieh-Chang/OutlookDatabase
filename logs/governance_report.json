@@ -1,0 +1,48 @@
+{
+  "timestamp": "1778547229.8552442",
+  "sample_size": 10,
+  "passed": 1,
+  "pass_rate": "10.0%",
+  "details": [
+    {
+      "name": "Membrane Issue of TA161BEPTG012C00 (Lot# OL-242400267 )",
+      "status": "FAIL"
+    },
+    {
+      "name": "fa_量測時間預估",
+      "status": "FAIL"
+    },
+    {
+      "name": "cmm",
+      "status": "FAIL"
+    },
+    {
+      "name": "吉生醫療-公針基錐度問題及 輸液管瑕疵處理結果",
+      "status": "FAIL"
+    },
+    {
+      "name": "MOULDEX (Biometrix SlovakiaIsreal) Supplier Change Notification on Y-connector",
+      "status": "FAIL"
+    },
+    {
+      "name": "712-86055-002",
+      "status": "FAIL"
+    },
+    {
+      "name": "Mouldex Co., Ltd. (凱益股份有限公司)",
+      "status": "FAIL"
+    },
+    {
+      "name": "019GZ,Vial Port Piercing Pin Spike 模具生產吐黑問題",
+      "status": "PASS"
+    },
+    {
+      "name": "lop_(list_of_personnel)",
+      "status": "FAIL"
+    },
+    {
+      "name": "712-86055-002 boot drawing update. redline",
+      "status": "FAIL"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDCA Quality Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { background: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-2 text-emerald-400">PDCA 質量審計儀表板</h1>
+        <p class="text-slate-400 mb-8 text-sm">此數據直接讀取物理磁盤審計結果，非 AI 推測進度。</p>
+        
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="card p-6 text-center">
+                <div class="text-slate-400 text-xs mb-1">總知識實體</div>
+                <div id="total" class="text-3xl font-bold">--</div>
+            </div>
+            <div class="card p-6 text-center border-emerald-500/30 bg-emerald-500/5">
+                <div class="text-emerald-400 text-xs mb-1">物理審計合格</div>
+                <div id="passed" class="text-3xl font-bold text-emerald-400">--</div>
+            </div>
+            <div class="card p-6 text-center">
+                <div class="text-slate-400 text-xs mb-1">當前合格率</div>
+                <div id="rate" class="text-3xl font-bold">--</div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> 
+                最新合格樣本 (Check Passed)
+            </h2>
+            <div id="passed-list" class="space-y-2 text-sm text-slate-300 mb-8"></div>
+
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-500 rounded-full"></span> 
+                待修復清單 (PDCA Backlog)
+            </h2>
+            <div id="failed-list" class="space-y-2 text-sm text-red-300"></div>
+        </div>
+
+        <button onclick="runAudit()" class="mt-8 w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-all">
+            立即執行全量物理審計 (Run Full Audit)
+        </button>
+    </div>
+
+    <script>
+        async function loadReport() {
+            try {
+                const resp = await fetch('/api/pdca/report');
+                const data = await resp.json();
+                document.getElementById('total').innerText = data.total;
+                document.getElementById('passed').innerText = data.passed_count;
+                document.getElementById('rate').innerText = data.pass_rate;
+                
+                document.getElementById('passed-list').innerHTML = data.passed_examples.map(ex => `<div>✅ ${ex}</div>`).join('');
+                document.getElementById('failed-list').innerHTML = data.failed_examples.map(ex => `<div>❌ ${ex}</div>`).join('');
+            } catch (e) {}
+        }
+
+        async function runAudit() {
+            const btn = document.querySelector('button');
+            btn.innerText = '審計中... (Checking Physical Files)';
+            btn.disabled = true;
+            await fetch('/api/pdca/run', { method: 'POST' });
+            await loadReport();
+            btn.innerText = '立即執行全量物理審計 (Run Full Audit)';
+            btn.disabled = false;
+        }
+
+        loadReport();
+    </script>
+</body>
+</html>

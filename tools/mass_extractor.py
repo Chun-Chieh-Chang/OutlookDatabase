@@ -97,7 +97,7 @@ def omni_knowledge_extraction(min_freq=5):
                 # 模糊匹配確保精確性
                 if ent_name.lower() in dim['name'].lower() or dim['name'].lower() in ent_name.lower():
                     dim['category'] = 'spec'
-                    analyzer.save_wiki_entity(dim)
+                    analyzer.save_wiki_entity(dim, frequency=freq)
                     log(f"  -> Materialized: {ent_name}")
                     
                     # 閃電戰同步：每一點進展都立即呈現

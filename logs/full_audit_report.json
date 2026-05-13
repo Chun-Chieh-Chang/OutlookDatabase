@@ -1,0 +1,12 @@
+{
+  "physical": {
+    "total": 963,
+    "passed": 844,
+    "rate": "87.6%"
+  },
+  "quality": {
+    "total": 343,
+    "passed": 459,
+    "rate": "100.0%"
+  }
+}

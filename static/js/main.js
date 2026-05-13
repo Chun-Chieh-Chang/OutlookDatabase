@@ -11,7 +11,8 @@ const AppState = {
     currentView: 'dashboard',
     lastSyncNodeCount: 0,
     selectedEmails: new Set(),
-    prunePage: 1
+    prunePage: 1,
+    syncActive: true
 };
 
 const UI = {
@@ -57,17 +58,60 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardStats();
     loadRecentEmails();
     checkAIStatus();
-    pollSystemLogs(); // 立即執行一次
+    pollSystemLogs(); 
     
     setInterval(() => {
-        if (AppState.currentView === '3d') sync3DGraph();
+        if (AppState.currentView === '3d' && AppState.syncActive) sync3DGraph();
         loadDashboardStats();
         checkAIStatus();
         pollSystemLogs();
         updateSynthesisProgress();
     }, 4000); 
 
-    // [終極解決方案] 全域事件委派：攔截所有對導入按鈕的點擊
+    startIncrementalSync();
+
+    // Wiki 搜尋連動邏輯
+    const searchInput = document.getElementById('wikiSearchInput') || document.querySelector('input[placeholder*="搜尋"]');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            if (AppState.currentView === 'wiki') {
+                filterWikiList(val);
+            }
+        });
+
+        // [New] Wiki 優先直達邏輯
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = searchInput.value.toLowerCase();
+                // 優先在 Wiki 列表搜尋
+                const matches = document.querySelectorAll('#wikiSidebar .wiki-item, #wikiGrid .glass-panel');
+                let foundMatch = null;
+                for (let item of matches) {
+                    if (item.innerText.toLowerCase().includes(val)) {
+                        foundMatch = item;
+                        break;
+                    }
+                }
+
+                if (foundMatch) {
+                    UI.log(`⚡ 偵測到實體直接匹配：啟動 Wiki 直達程式...`);
+                    showView('wiki');
+                    const fileName = foundMatch.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+                    if (fileName) {
+                        loadWikiPage(fileName);
+                    } else {
+                        foundMatch.click(); // 退而求其次，觸發點擊
+                    }
+                } else {
+                    // 找不到才去詢問 AI
+                    askWiki();
+                }
+            }
+        });
+    }
+
+    // 全域導入按鈕監聽
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('#importBundleBtn');
         if (btn) {
@@ -98,10 +142,17 @@ async function pollSystemLogs() {
             const timer = UI.get('system-timer');
             
             if (bar) bar.style.width = (prog.percentage || 0) + '%';
-            if (timer && prog.elapsed_seconds) {
-                const m = Math.floor(prog.elapsed_seconds / 60).toString().padStart(2, '0');
-                const s = (prog.elapsed_seconds % 60).toString().padStart(2, '0');
-                timer.innerText = `${m}:${s}`;
+            
+            // [V3.1] 更新百分比與狀態文字
+            const pText = UI.get('system-progress-text');
+            const sText = UI.get('system-status-text');
+            if (pText) pText.innerText = Math.round(prog.percentage || 0) + '%';
+            if (sText && prog.status) sText.innerText = prog.status;
+
+            if (timer && prog.elapsed_seconds !== undefined) {
+                const mins = Math.floor(prog.elapsed_seconds / 60);
+                const secs = prog.elapsed_seconds % 60;
+                timer.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
         } catch (e) {}
 
@@ -110,7 +161,7 @@ async function pollSystemLogs() {
             // 如果這行還沒出現在日誌視窗中
             if (cleanLine && !lastLogLines.includes(cleanLine)) {
                 // 放寬過濾條件，包含所有進度訊號
-                const isProgress = /正在分析|✅|🚀|\[Fallback\]|已加載|Starting|Analysis|Waiting|Processing/.test(cleanLine);
+                const isProgress = /正在分析|✅|🚀|\[Fallback\]|已加載|Starting|Analysis|Waiting|Processing|Gemini|PROGRESS/.test(cleanLine);
                 if (isProgress) {
                     UI.log(cleanLine, cleanLine.includes('Fallback') ? 'error' : 'info');
                 }
@@ -265,9 +316,16 @@ async function init3DGraph() {
     } catch (err) { UI.log('3D 引擎崩潰: ' + err.message, 'error'); }
 }
 
+function filterWikiList(query) {
+    const items = document.querySelectorAll('#wikiSidebar .wiki-item, #wikiGrid .glass-panel');
+    items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(query) ? '' : 'none';
+    });
+}
+
 async function sync3DGraph() {
-    if (!graphInstance) return;
-    UI.log('執行增量同步檢查...');
+    if (!graphInstance || !AppState.syncActive) return;
     try {
         const resp = await fetch('/api/graph_data?t=' + Date.now());
         const data = await resp.json();
@@ -276,7 +334,39 @@ async function sync3DGraph() {
             graphInstance.graphData(data);
             AppState.lastSyncNodeCount = data.nodes.length;
         }
-    } catch (err) { UI.log('實時同步失效', 'error'); }
+    } catch (err) { }
+}
+
+let syncFailCount = 0;
+async function startIncrementalSync() {
+    const interval = setInterval(async () => {
+        if (!AppState.syncActive) {
+            clearInterval(interval);
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/sync/incremental');
+            const data = await resp.json();
+            
+            if (data.status === 'no_outlook') {
+                syncFailCount++;
+                if (syncFailCount >= 3) {
+                    AppState.syncActive = false;
+                    UI.log('[系統休眠] 未偵測到 Outlook 環境，已切換至離線模式。', 'warning');
+                    clearInterval(interval);
+                }
+            } else {
+                syncFailCount = 0;
+                // 只有在特定視圖下才顯示心跳日誌，避免干擾
+                if (AppState.currentView === 'sync') {
+                    UI.log(data.message || '執行增量同步檢查...');
+                }
+            }
+        } catch (e) {
+            syncFailCount++;
+        }
+    }, 5000);
 }
 
 function showView(v) {
@@ -876,21 +966,40 @@ window.uploadBundle = uploadBundle;
 
 async function updateSynthesisProgress() {
     try {
-        const resp = await fetch('/api/wiki/synthesis_progress?t=' + Date.now());
+        const resp = await fetch('/api/system_progress?t=' + Date.now());
         const data = await resp.json();
-        const bar = document.getElementById('synthProgressBar');
-        const text = document.getElementById('synthProgressText');
-        const btn = document.getElementById('btnBatchSynth');
         
-        if (bar) bar.style.width = data.percentage + '%';
-        if (text) text.innerText = data.completed + ' / ' + data.total + ' (' + data.percentage + '%)';
+        const pBar = document.getElementById('physical-progress-bar');
+        const pLabel = document.getElementById('physical-percentage-label');
+        const qBar = document.getElementById('quality-progress-bar');
+        const qLabel = document.getElementById('quality-percentage-label');
+        const timer = document.getElementById('system-timer');
         
-        if (btn && data.percentage === 100 && data.total > 0) {
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> 全量合成已達成';
-            btn.className = 'p-3 px-6 rounded-xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed flex items-center gap-2';
-            btn.onclick = null;
+        if (data.physical_percentage !== undefined) {
+            if (pBar) pBar.style.width = data.physical_percentage + '%';
+            if (pLabel) pLabel.innerText = Math.round(data.physical_percentage) + '%';
         }
-    } catch (e) {}
+        
+        if (data.quality_percentage !== undefined) {
+            if (qBar) qBar.style.width = data.quality_percentage + '%';
+            if (qLabel) qLabel.innerText = Math.round(data.quality_percentage) + '%';
+        }
+
+        if (timer && data.elapsed_seconds !== undefined) {
+            const mins = Math.floor(data.elapsed_seconds / 60);
+            const secs = data.elapsed_seconds % 60;
+            timer.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // 相容性處理：同時更新百科視窗內的進度條
+        const oldBar = document.getElementById('synthProgressBar');
+        const oldText = document.getElementById('synthProgressText');
+        if (oldBar) oldBar.style.width = data.physical_percentage + '%';
+        if (oldText) oldText.innerText = data.physical_status;
+
+    } catch (e) {
+        console.error('Progress Update Error:', e);
+    }
 }
 window.updateSynthesisProgress = updateSynthesisProgress;
 

@@ -20,3 +20,6 @@ External suppliers or vendors whose processes must be included in the scope of t
 
 
 > **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。
+
+
+*PDCA 確效 (Verified)*

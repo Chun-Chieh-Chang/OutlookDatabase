@@ -51,7 +51,7 @@ class KnowledgeGovernor:
                     if name.startswith('R') or name.startswith('V') or name.startswith('X'): ent['category'] = 'spec'
                     elif name.startswith('M'): ent['category'] = 'pqc'
                     
-                    self.analyzer.save_wiki_entity(ent)
+                    self.analyzer.save_wiki_entity(ent, frequency=target['frequency'])
                     print(f"✅ {name} 已成功實體化並歸類至 {ent['category']}")
                     break
             

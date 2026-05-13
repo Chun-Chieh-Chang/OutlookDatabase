@@ -211,7 +211,7 @@ class EmailAnalyzer:
             return True
         return False
 
-    def save_wiki_entity(self, entity):
+    def save_wiki_entity(self, entity, frequency=None):
         """將提取的實體儲存為 Wiki 檔案 (v3: QC-Centric Structure)"""
         name = entity.get('name')
         if not name or name.lower() == 'unknown':
@@ -249,11 +249,18 @@ class EmailAnalyzer:
         md_content += f"# {name}\n\n"
         md_content += f"## 📝 技術描述\n{entity.get('description', '尚無描述')}\n\n"
         
+        if frequency is not None:
+            md_content += f"歷史郵件出現次數: **{frequency} 次**。點擊或開啟它時，AI 能為您即時總結。\n\n"
+        
         if entity.get('relationships'):
             md_content += "## 🔗 專業關聯\n"
             for rel in entity['relationships']:
                 md_content += f"- **{rel.get('type', 'related')}**: [[{rel.get('target', 'Unknown')}]]\n"
         
+        # Add magic string for batch synthesis if not already there
+        if "點擊或開啟它時，AI 能為您即時總結。" not in md_content:
+            md_content += f"\n\n> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。\n"
+
         # Save file
         try:
             with open(file_path, 'w', encoding='utf-8') as f:

@@ -16,3 +16,5 @@ node_modules/
 .venv/
 .gemini/
 *.log
+ai_config.json
+scratch/

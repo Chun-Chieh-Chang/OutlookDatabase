@@ -9,9 +9,6 @@ updated: 2026-05-10
 
 # Xu Yi-ting (徐逸庭)
 
-## 📝 技術描述
-QC candidate (46 years old). Soochow University Japanese major. 13-14 years experience. Strong language skills (Japanese, English) and responsibility.
+## 📝 技術描述 (待 PDCA 確效合成)
 
-
-
-> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。
+> 偵測到配置更新，請點擊「批次深度合成」以獲取 AI 洞察...

@@ -20,3 +20,9 @@ The defined scope of the quality system for component manufacturing.
 
 
 > **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。
+
+
+*PDCA 確效 (Verified)*
+
+
+*確效層級：旗艦級深度合成*

@@ -8,11 +8,6 @@ updated: 2026-05-10
 
 # Lin En-lang (林恩郎)
 
-## 📝 技術描述
-Senior Quality Engineer candidate (51 years old). Extensive experience in solar industry (Neo Solar Power) and QC management.
+## 📝 技術描述 (待 PDCA 確效合成)
 
-## 🔗 專業關聯
-- **Applicant**: [[Mouldex Co., Ltd.]]
-
-
-> **系統通知**: 偵測到配置更新。點擊或開啟它時，AI 能為您即時總結。
+> 偵測到配置更新，請點擊「批次深度合成」以獲取 AI 洞察...
