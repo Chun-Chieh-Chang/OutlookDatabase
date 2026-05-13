@@ -229,8 +229,8 @@ async function init3DGraph() {
 
         graphInstance = ForceGraph3D()(elem)
             .graphData(data)
-            .nodeColor(node => node.color || '#3b82f6')
-            .nodeRelSize(5)
+            .nodeColor(node => node.color || '#60A5FA') /* 使用 Sky Blue 旗艦色 */
+            .nodeRelSize(6)
             .nodeThreeObject(node => {
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
@@ -271,10 +271,11 @@ async function init3DGraph() {
                 closeView('3d'); showView('wiki'); loadWikiPage(node.id + '.md');
             });
 
-        graphInstance.d3Force('link').distance(800).strength(0.005);
-        graphInstance.d3Force('charge').strength(-10000);
-        graphInstance.linkOpacity(0.1); // 大幅淡化連線，防止疊加發光
+        graphInstance.d3Force('link').distance(600).strength(0.007);
+        graphInstance.d3Force('charge').strength(-12000);
+        graphInstance.linkOpacity(0.08); // 極致淡化，呈現星雲感
         graphInstance.controls().autoRotate = true;
+        graphInstance.controls().autoRotateSpeed = 0.5;
 
         // [Premium UX] 實作游標基準縮放 (Zoom to Cursor)
         elem.addEventListener('wheel', (e) => {
@@ -976,13 +977,15 @@ async function updateSynthesisProgress() {
         const timer = document.getElementById('system-timer');
         
         if (data.physical_percentage !== undefined) {
-            if (pBar) pBar.style.width = data.physical_percentage + '%';
-            if (pLabel) pLabel.innerText = Math.round(data.physical_percentage) + '%';
+            const pVal = Math.min(100, Math.round(data.physical_percentage));
+            if (pBar) pBar.style.width = pVal + '%';
+            if (pLabel) pLabel.innerText = pVal + '%';
         }
         
         if (data.quality_percentage !== undefined) {
-            if (qBar) qBar.style.width = data.quality_percentage + '%';
-            if (qLabel) qLabel.innerText = Math.round(data.quality_percentage) + '%';
+            const qVal = Math.min(100, Math.round(data.quality_percentage));
+            if (qBar) qBar.style.width = qVal + '%';
+            if (qLabel) qLabel.innerText = qVal + '%';
         }
 
         if (timer && data.elapsed_seconds !== undefined) {
